@@ -1,0 +1,1 @@
+prompts = ["A modern Alstom Adessia train, painted in a sleek white design with green and red accents, speeds along tracks surrounded by lush greenery under a clear blue sky, with distant buildings visible in the background."]

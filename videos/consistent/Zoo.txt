@@ -1,0 +1,1 @@
+prompts = ["A family, including a mother and her children, are feeding a giraffe at a zoo, with the children extending branches of leaves towards the giraffe through a fence."]prompts = ["A sleek white motor yacht speeds across the turquoise blue sea, leaving a dramatic wake of white foam behind it under a clear blue sky."]

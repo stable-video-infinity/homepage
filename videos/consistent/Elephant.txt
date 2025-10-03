@@ -1,0 +1,1 @@
+prompts = ["A mother elephant and her calf stand together in a grassy field under a clear blue sky, with the mother elephant appearing protective and the calf nestled close to her side."]

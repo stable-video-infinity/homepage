@@ -1,0 +1,1 @@
+prompts = ["A person clad in dark winter attire walks through a heavy snowstorm, their figure partially obscured by swirling snowflakes, creating a stark contrast against the snowy street beneath them."]

@@ -1,0 +1,3180 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SVI</title>
+    <meta name="description" content="SVI is a long video generation model">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1.9.1/css/academicons.min.css">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9R6G4R5JJQ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-9R6G4R5JJQ');
+    </script>
+
+    <style>
+        @font-face {
+            font-family: 'Raleway';
+            font-style: normal;
+            font-weight: 600;
+            font-display: block;
+            src: url(assets/fonts/raleway_normal_600.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+
+        @font-face {
+            font-family: 'Outfit';
+            font-style: normal;
+            font-weight: 100 900;
+            font-display: block;
+            src: url(assets/fonts/outfit.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --intro-scale: 0
+        }
+
+        body {
+            margin: 0;
+            font-family: "Outfit", sans-serif;
+            background: #28282d;
+            color: #fff;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 链接样式 - 设置为白色 */
+        a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        a:visited {
+            color: #fff;
+        }
+
+        .flex {
+            display: flex;
+            gap: 24px;
+            align-items: stretch;
+            justify-content: stretch;
+        }
+
+        .flex-center {
+            align-items: center;
+        }
+
+        #logo {
+            position: absolute;
+            top: 0;
+            right: calc(50vw - min(45vw, 1600px / 2));
+            z-index: 1;
+            background: rgb(60, 140, 255);
+            padding: 32px 8px 8px 8px;
+            border-radius: 0 0 8px 8px;
+        }
+
+        #logo svg {
+            width: 40px;
+            height: 40px;
+        }
+
+
+        section {
+            border-top: 1px solid #333;
+            padding: 48px calc(50vw - min(45vw, 1600px / 2));
+        }
+
+        .text {
+            margin-bottom: 50px;
+        }
+
+        #intro {
+            text-align: center;
+            height: 100vh;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+        }
+
+        #intro .content {
+            top: 0;
+            left: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #intro .background-video {
+            width: calc(100vw * (1 - var(--intro-scale)) + min(90vw, 1600px) * var(--intro-scale));
+            height: calc(100vh * (1 - var(--intro-scale)) + 90vh * var(--intro-scale));
+            border-radius: calc(0px * (1 - var(--intro-scale)) + 16px * var(--intro-scale));
+            overflow: hidden;
+        }
+
+        #intro video {
+            width: calc(100% + 20px);
+            height: calc(100% + 20px);
+            margin-left: -10px;
+            margin-top: -10px;
+            object-fit: cover;
+            filter: brightness(50%) blur(10px);
+        }
+
+        #intro h1 {
+            font-size: 60px;
+            margin: 100px 0 20px 0;
+            font-family: "Raleway", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        #intro h2 {
+            margin: 20px 0 40px 0;
+            font-size: 20px;
+            font-weight: 200;
+        }
+
+        #intro h3 {
+            margin: 20px 0 40px 0;
+            font-size: 40px;
+            font-weight: 200;
+        }
+
+        #t2v {
+            border: none;
+        }
+
+        #t2v .text:not(:first-of-type) {
+            margin-top: 48px;
+        }
+
+        #t2v .feature-video {
+            aspect-ratio: 21 / 9;
+        }
+
+        .feature-video {
+            position: relative;
+        }
+
+        .feature-video .cover {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            transition: backdrop-filter 0.5s;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .feature-video .button {
+            width: 64px;
+            height: 64px;
+            border-radius: 32px;
+            background-color: #fff;
+            background-image: url(assets/icons/play.svg);
+            background-position: center;
+            background-repeat: no-repeat;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            margin: 32px auto 0 auto;
+            transition: box-shadow 0.5s;
+        }
+
+        .feature-video .cover:hover .button {
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .feature-video video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .feature-video video.final-video {
+            object-fit: contain;
+            opacity: 0;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 400;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: normal;
+            margin: 0;
+            color: #b9bbc6;
+            line-height: 25px;
+        }
+
+        p {
+            font-size: 16px;
+            color: #b9bbc6;
+            line-height: 25px;
+            font-weight: 300;
+        }
+
+        .grid {
+            display: grid;
+            grid-gap: 16px;
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .grid2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .grid3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .grid5 {
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        .video-player {
+            width: 100%;
+            display: flex;
+            justify-content: stretch;
+            align-items: stretch;
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #222;
+        }
+
+        video {
+            width: 100%;
+            object-fit: cover;
+            touch-action: manipulation;
+        }
+
+        .video-player {
+            touch-action: manipulation;
+        }
+
+        /* 改进滚动性能 */
+        .grid:not(.grid-noslide) {
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+
+        .shots-list {
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+
+        .page-select {
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+
+        .span12 {
+            grid-row: span 2;
+        }
+
+        .span22 {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .span21 {
+            grid-column: span 2;
+        }
+
+        #i2v .author {
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #i2v .video-player:hover .author {
+            opacity: 1;
+        }
+
+        #i2v2 {
+            padding-top: 0;
+            border: none;
+        }
+
+        #i2v2 .page-control {
+            margin-bottom: 48px;
+        }
+
+        #i2v2 .page-content .video-player {
+            aspect-ratio: 448 / 800;
+        }
+
+        .page-select {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            margin: 8px 0 16px 0;
+        }
+
+        .page-select>div {
+            padding: 8px 16px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: background-color 0.5s, color 0.5s;
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        .page-select>div:hover {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .page-select>div[selected=true] {
+            background-color: #fff;
+            color: #000;
+        }
+
+        .page-content>div:not([selected=true]) {
+            display: none;
+        }
+
+        #long {
+            background: linear-gradient(75deg, #524037, #282025);
+        }
+
+        #long .text {
+            width: 30%;
+            flex-shrink: 0;
+        }
+
+        #shots {
+            padding-top: 0;
+            padding-bottom: 0;
+            background: linear-gradient(180deg, #222a2d, #121a1d);
+        }
+
+        #shots video {
+            aspect-ratio: 872 / 480;
+        }
+
+        #shots .main {
+            position: sticky;
+            top: 0;
+            max-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px 0;
+        }
+
+        #shots>.flex {
+            align-items: stretch;
+        }
+
+        .shots-list {
+            padding: 64px 0;
+            width: 30%;
+            min-width: 300px;
+            flex-shrink: 0;
+            position: relative;
+            scrollbar-width: none;
+        }
+
+        .shots-list>div {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-radius: 8px;
+            padding-right: 16px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.5s;
+        }
+
+        .shots-list p {
+            font-size: 14px;
+        }
+
+        .shots-list>div:not(:last-of-type) {
+            margin-bottom: 8px;
+        }
+
+        .shots-list>div[selected] {
+            background: rgba(0, 0, 0, 0.5)
+        }
+
+        .shots-list>div:hover {
+            background: rgba(255, 255, 255, 0.2)
+        }
+
+        .shots-list img {
+            width: 80px;
+            border-radius: 8px;
+            aspect-ratio: 872 / 480;
+        }
+
+        .shots-list h6 {
+            margin: 4px 0 0 0;
+        }
+
+        .shots-list p {
+            margin: 0;
+        }
+
+        @media (min-height: 1024px) {
+            #shots {
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+
+            .shots-list {
+                max-height: 900px;
+                overflow: scroll;
+            }
+        }
+
+        #audio,
+        #avatar {
+            background: #202820;
+        }
+
+        #identity {
+            background: #2f2820;
+        }
+
+        #real-time {
+            background: #000;
+        }
+
+
+        .audio-control {
+            transition: transform 0.5s, box-shadow 0.5s;
+        }
+
+        /* Audio type indicators */
+        .audio-control[data-audio-type="external"]::before {
+            content: '♪ Background Music';
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 5;
+            opacity: 0.8;
+        }
+
+        .audio-control[data-audio-type="original"]::before {
+            content: '♪ Original Audio';
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            z-index: 5;
+            opacity: 0.8;
+        }
+
+        .audio-control[data-audio-playing="true"]::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            background: #00ff00;
+            border-radius: 50%;
+            opacity: 0.9;
+            animation: pulse 1.5s infinite;
+            z-index: 5;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.9;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.3;
+                transform: scale(1.3);
+            }
+
+            100% {
+                opacity: 0.9;
+                transform: scale(1);
+            }
+        }
+
+        .audio-button {
+            width: 64px;
+            height: 64px;
+            border-radius: 32px;
+            position: absolute;
+            right: 32px;
+            bottom: 32px;
+            transition: box-shadow 0.5s, opacity 0.5s;
+            cursor: pointer;
+            background-color: #fff;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 32px;
+            background-image: url(assets/icons/mute.svg);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
+
+        body[muted=false] .audio-button {
+            background-image: url(assets/icons/unmute.svg);
+        }
+
+        .play-pause-button {
+            width: 64px;
+            height: 64px;
+            border-radius: 32px;
+            position: absolute;
+            right: 112px;
+            bottom: 32px;
+            transition: box-shadow 0.5s, opacity 0.5s;
+            cursor: pointer;
+            background-color: #fff;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 32px;
+            background-image: url(assets/icons/play.svg);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
+
+        .play-pause-button.playing {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>');
+        }
+
+        .speed-button {
+            width: 64px;
+            height: 64px;
+            border-radius: 32px;
+            position: absolute;
+            right: 192px;
+            bottom: 32px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background-color: #fff;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: 32px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>');
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+            opacity: 0;
+            color: black;
+            font-size: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .speed-button.active {
+            background-color: rgba(255, 107, 107, 0.9);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>');
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .speed-button::after {
+            content: "4x";
+            position: absolute;
+            bottom: 6px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .speed-button:hover {
+            background-color: rgba(255, 255, 255, 1);
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .speed-button.active:hover {
+            background-color: rgba(255, 107, 107, 1);
+            transform: scale(1.15);
+        }
+
+        @media (min-width: 640px) {
+            body[muted=false] .audio-control:hover {
+                transform: scale(1.05);
+                z-index: 1;
+                box-shadow: 0 0 32px rgba(0, 0, 0, 0.8);
+            }
+
+            .audio-control .audio-button {
+                opacity: 0;
+            }
+
+            .audio-control .play-pause-button {
+                opacity: 0;
+            }
+
+            .audio-control:hover .audio-button {
+                opacity: 1;
+            }
+
+            .audio-control:hover .play-pause-button {
+                opacity: 1;
+            }
+
+            .audio-control .speed-button {
+                opacity: 0;
+            }
+
+            .audio-control:hover .speed-button {
+                opacity: 1;
+            }
+
+            .audio-control .audio-button:hover {
+                background-color: #fff;
+                border: none;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+            }
+
+            .audio-control .play-pause-button:hover {
+                background-color: #fff;
+                border: none;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+            }
+
+            .audio-control .speed-button:hover {
+                background-color: #fff;
+                border: none;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+            }
+
+            .audio-button-mobile {
+                display: none;
+            }
+
+            .mobile-only {
+                display: none !important;
+            }
+        }
+
+        .duration-indicator {
+            position: relative;
+        }
+
+        .duration-indicator .bar {
+            position: absolute;
+            bottom: 16px;
+            left: 32px;
+            width: calc(100% - 64px);
+            height: 6px;
+            border-radius: 100px;
+            background: rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            z-index: 10;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .duration-indicator .bar:hover {
+            height: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            bottom: 15px;
+        }
+
+        .duration-indicator .bar:active {
+            transform: scale(1.02) translateY(0);
+        }
+
+        .duration-indicator .barinner {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #00bcd4, #2196f3);
+            transition: width 0.1s ease;
+        }
+
+        .duration-indicator .time {
+            position: absolute;
+            right: 32px;
+            bottom: 24px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        /* Show progress bar and time on hover over the entire video container */
+        .duration-indicator:hover .time {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .duration-indicator:hover .bar {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Keep elements visible when hovering over the bar itself */
+        .duration-indicator .bar:hover {
+            height: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            bottom: 15px;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #super-resolution {
+            background: linear-gradient(75deg, #282838, #222233)
+        }
+
+        #super-resolution .text {
+            max-width: 30%;
+        }
+
+        .video-slider {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #222;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .video-slider .video1,
+        .video-slider .video2 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #222;
+        }
+
+        .video-slider .video1 {
+            width: 50%;
+            border-right: 3px solid #fff;
+            z-index: 2;
+        }
+
+        .video-slider .button {
+            width: 64px;
+            height: 64px;
+            border-radius: 32px;
+            background-color: #fff;
+            background-image: url(assets/icons/drag.svg);
+            background-position: center;
+            background-repeat: no-repeat;
+            position: absolute;
+            transition: box-shadow 0.5s, opacity 0.5s;
+            z-index: 3;
+            opacity: 0.5;
+        }
+
+        .video-slider:hover .button {
+            opacity: 1;
+        }
+
+        .video-slider .button:hover {
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-slider .slider {
+            background-image: url(assets/icons/drag.svg);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: grab;
+        }
+
+        .video-slider video {
+            width: auto;
+            height: 100%;
+        }
+
+        .video-slider .label {
+            display: inline-block;
+            position: absolute;
+            top: 32px;
+            font-size: 14px;
+            font-weight: 600;
+            background-color: #fff;
+            border-radius: 4px;
+            opacity: 0.75;
+            color: #000;
+            padding: 4px 8px;
+            user-select: none;
+        }
+
+        .video-slider .video1 .label {
+            left: 32px
+        }
+
+        .video-slider .video2 .label {
+            right: 32px
+        }
+
+        .video-slider .fullscreen {
+            background-image: url(assets/icons/fullscreen.svg);
+            opacity: 0;
+            bottom: 32px;
+            right: 32px;
+        }
+
+        body[fullscreen] .video-slider .fullscreen {
+            background-image: url(assets/icons/fullscreen-exit.svg);
+        }
+
+        .video-caption {
+            padding: 8px 16px;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #888;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 0 0 8px 8px;
+            margin-top: -8px;
+        }
+
+        .row-caption {
+            display: flex;
+            justify-content: center;
+            margin: 8px 0 24px 0;
+        }
+
+        .row-caption .video-caption {
+            max-width: 1200px;
+            margin: 0;
+            position: relative;
+        }
+
+        .caption-toggle {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid #666;
+            color: #666;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+        }
+
+        .caption-toggle:hover {
+            background: rgba(0, 0, 0, 0.2);
+            color: #888;
+        }
+
+        .caption-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .caption-content.expanded {
+            display: block;
+            opacity: 1;
+        }
+
+        .caption-toggle::after {
+            content: " ▼";
+            transition: transform 0.3s ease;
+        }
+
+        .caption-toggle.expanded::after {
+            transform: rotate(180deg);
+        }
+
+        #camera-control .grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        #camera-control h6 {
+            margin: 8px 0;
+            z-index: 1;
+        }
+
+        #camera-control .video-player,
+        #world-explore .video-player {
+            aspect-ratio: 16 / 9;
+        }
+
+        #camera-control {
+            background: linear-gradient(90deg, #252820, #102028);
+        }
+
+        #world-explore {
+            background: linear-gradient(90deg, #252820, #152028);
+        }
+
+        #synthetic {
+            padding-bottom: 80px;
+            background: linear-gradient(#102028, #000);
+        }
+
+        #synthetic .flex {
+            gap: 16px;
+        }
+
+        .method-comparison {
+            margin-bottom: 32px;
+        }
+
+        .method-headers {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .method-header {
+            text-align: center;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .method-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .method-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: #000;
+            text-shadow: none;
+        }
+
+        .method-header.svi {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        #team {
+            background-color: #000;
+            text-align: center;
+            padding: 80px 16px 160px 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+        }
+
+        #team .content {
+            width: 100%;
+        }
+
+        #team .flex {
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #team h3 {
+            font-size: 20px;
+            font-weight: 400;
+            margin-top: 80px;
+            margin-bottom: 8px;
+        }
+
+        #team h4 {
+            font-size: 17px;
+            font-weight: 400;
+            margin-top: 32px;
+            margin-bottom: 8px;
+        }
+
+        #team h6 {
+            font-weight: 200;
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        #team ul {
+            padding: 0;
+            margin: 0;
+            min-width: 250px;
+        }
+
+        #team li,
+        #team p {
+            font-size: 17px;
+            font-weight: 200;
+            line-height: 28px;
+            list-style-type: none;
+            text-wrap: balance;
+        }
+
+        #team p {
+            max-width: 1600px;
+            color: #fff;
+            margin: 16px auto 0 auto;
+        }
+
+        #team p span {
+            text-wrap: nowrap;
+        }
+
+        a.external {
+            border-radius: 100px;
+            text-decoration: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background-color 0.5s, color 0.5s;
+            color: #b9bbc6;
+            font-size: 14px;
+            margin-top: 8px;
+            margin-bottom: -24px;
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        a.external:hover {
+            background: rgba(255, 255, 255, 1) !important;
+            color: #000;
+        }
+
+        #real-time a.external {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #shots a.external {
+            margin-bottom: 0;
+        }
+
+        .paper-button {
+            padding-right: 16px;
+            border-radius: 8px;
+            color: #fff;
+            background-color: rgba(128, 128, 128, 0.3);
+            cursor: pointer;
+            transition: background-color 0.5s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .paper-button .icon {
+            box-sizing: content-box;
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.7);
+            margin-right: 16px;
+            transition: background-color 0.5s;
+        }
+
+        .paper-button:hover {
+            background-color: #fff;
+            color: #000;
+        }
+
+        .paper-button:hover .icon {
+            background-color: #fff;
+        }
+
+        .speed-up-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 64px;
+            height: 64px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .speed-up-active .speed-up-indicator {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 640px) {
+            #intro h1 {
+                font-size: clamp(32px, 8vw, 64px);
+                margin: 50px 0 20px 0;
+                line-height: 1.2;
+            }
+
+            #intro h2 {
+                font-size: clamp(14px, 4vw, 20px);
+                padding: 0 16px;
+                line-height: 1.4;
+            }
+
+            #intro .background-video {
+                width: calc(100vw * (1 - var(--intro-scale)) + (100vw - 32px) * var(--intro-scale));
+                height: calc(100vh * (1 - var(--intro-scale)) + 85vh * var(--intro-scale));
+            }
+
+            h1 {
+                font-size: clamp(20px, 5vw, 24px);
+                line-height: 1.3;
+            }
+
+            h2 {
+                font-size: clamp(16px, 4vw, 22px);
+                line-height: 1.4;
+            }
+
+            p {
+                font-size: clamp(14px, 3.5vw, 16px);
+                line-height: 1.5;
+            }
+
+            section {
+                padding: 24px 16px;
+                position: relative;
+            }
+
+            .text {
+                margin-bottom: 32px;
+            }
+
+            .grid {
+                gap: 8px;
+            }
+
+            .flex {
+                gap: 8px !important;
+            }
+
+            .flex-mobile {
+                display: block;
+            }
+
+            #t2v .feature-video {
+                aspect-ratio: 16/9;
+                max-height: 60vh;
+            }
+
+            #long .text,
+            #super-resolution .text {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            #shots {
+                padding: 24px 16px;
+            }
+
+            #shots .main {
+                position: relative;
+                padding: 0 0 16px 0;
+            }
+
+            #shots .shots-list {
+                display: flex;
+                overflow-x: scroll;
+                gap: 8px;
+                width: 100vw;
+                margin: 0 0 0 -16px;
+                padding: 0 16px;
+                scroll-snap-type: x mandatory;
+            }
+
+            #shots .shots-list>div {
+                scroll-snap-align: start;
+                scroll-margin: 16px;
+                min-width: 200px;
+            }
+
+            .grid:not(.grid-noslide) {
+                display: flex;
+                overflow-x: scroll;
+                width: 100vw;
+                margin-left: -16px;
+                padding: 0 16px;
+                scroll-snap-type: x mandatory;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .grid:not(.grid-noslide)>* {
+                width: calc(100vw - 48px);
+                max-width: 400px;
+                min-width: 280px;
+                max-height: 60vh;
+                flex-shrink: 0;
+                scroll-snap-align: center;
+                scroll-snap-stop: always;
+                scroll-margin: 16px;
+            }
+
+            .grid:not(.grid-noslide) .video-player:not(:first-of-type),
+            .grid:not(.grid-noslide) *:not(:first-of-type) .video-player {
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+
+            .grid:not(.grid-noslide) .video-player:not(:last-of-type),
+            .grid:not(.grid-noslide) *:not(:last-of-type) .video-player {
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+
+            .video-player {
+                border-radius: 12px;
+                min-height: 180px;
+            }
+
+            /* Mobile button controls - unified layout */
+            .audio-control {
+                position: relative;
+                padding-bottom: 70px;
+                /* Space for button row */
+            }
+
+            /* Show all buttons in mobile with unified styling */
+            .audio-control .speed-button,
+            .audio-control .play-pause-button,
+            .audio-control .audio-button {
+                display: flex !important;
+                opacity: 1 !important;
+                position: absolute;
+                bottom: 8px;
+                width: 52px;
+                height: 52px;
+                border-radius: 26px;
+                background-size: 24px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+                transition: all 0.3s ease;
+                align-items: center;
+                justify-content: center;
+                /* Reset desktop positioning */
+                right: auto;
+                top: auto;
+            }
+
+            /* Position buttons in a row at the bottom center */
+            .audio-control .speed-button {
+                left: calc(50% - 84px);
+                /* Left position */
+            }
+
+            .audio-control .play-pause-button {
+                left: calc(50% - 26px);
+                /* Center position */
+            }
+
+            .audio-control .audio-button {
+                left: calc(50% + 32px);
+                /* Right position */
+            }
+
+            /* Button hover effects on mobile */
+            .audio-control .speed-button:active,
+            .audio-control .play-pause-button:active,
+            .audio-control .audio-button:active {
+                transform: scale(0.95);
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+            }
+
+            /* Hide the separate mobile button */
+            .audio-button-mobile {
+                display: none !important;
+            }
+
+            .duration-indicator .bar {
+                left: 12px;
+                bottom: 80px;
+                /* Move above the button area */
+                width: calc(100% - 24px);
+                height: 4px;
+                opacity: 0;
+                /* Hidden by default, show on touch */
+                transform: translateY(10px);
+            }
+
+            .duration-indicator .time {
+                right: 12px;
+                bottom: 88px;
+                /* Move above the button area */
+                font-size: 12px;
+                opacity: 0;
+                /* Hidden by default, show on touch */
+                transform: translateY(10px);
+            }
+
+            /* Show progress bar on touch/tap for mobile */
+            .duration-indicator:active .bar,
+            .duration-indicator:active .time,
+            .duration-indicator.show-controls .bar,
+            .duration-indicator.show-controls .time {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            #synthetic .grid {
+                border-radius: 12px;
+                overflow: hidden;
+            }
+
+            #synthetic .video-player {
+                border-radius: 0;
+                min-height: 200px;
+            }
+
+            #synthetic .flex>div:last-child {
+                display: none;
+            }
+
+            section:has(a.external) {
+                padding-bottom: 72px !important;
+            }
+
+            a.external {
+                position: absolute;
+                bottom: 24px;
+                left: 16px;
+                width: calc(100vw - 32px);
+                text-align: center;
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            #shots a.external {
+                position: inherit;
+                margin: 8px 0;
+            }
+
+            #shots {
+                padding-bottom: 32px !important;
+            }
+
+            .desktop-only {
+                display: none !important;
+            }
+
+            #synthetic a.external {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .page-select {
+                justify-content: flex-start;
+                overflow-x: auto;
+                margin-left: -16px;
+                margin-right: -16px;
+                padding-left: 16px;
+                padding-right: 16px;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .page-select>div {
+                white-space: nowrap;
+                flex-shrink: 0;
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .method-headers {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                margin-bottom: 16px;
+            }
+
+            .method-header {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .method-header h3 {
+                font-size: 14px;
+                margin: 0;
+            }
+
+            .method-comparison {
+                margin-bottom: 24px;
+            }
+
+            .row-caption {
+                margin: 12px 16px 20px 16px;
+            }
+
+            .row-caption .video-caption {
+                font-size: 12px;
+                padding: 6px 12px;
+                max-width: none;
+            }
+
+            /* 改进logo在移动端的显示 */
+            #logo {
+                right: calc(50vw - min(47.5vw, 800px));
+                padding: 16px 8px 8px 8px;
+            }
+
+            #logo svg {
+                width: 32px;
+                height: 32px;
+            }
+
+            /* 改进intro部分的图片显示 */
+            #intro img {
+                max-width: 90vw !important;
+                height: auto;
+                margin-bottom: -40px !important;
+            }
+        }
+
+        #synthetic .video-player {
+            border-radius: 0;
+        }
+
+        #synthetic .flex>div:last-child {
+            display: none;
+        }
+
+        section:has(a.external) {
+            padding-bottom: 80px !important;
+        }
+
+        a.external {
+            position: absolute;
+            bottom: 48px;
+            left: 16px;
+            width: calc(100vw - 32px);
+            text-align: center;
+        }
+
+        #shots a.external {
+            position: inherit;
+            margin: 8px 0;
+        }
+
+        #shots {
+            padding-bottom: 24px !important;
+        }
+
+        .desktop-only {
+            display: none !important;
+        }
+
+        #synthetic a.external {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .page-select {
+            justify-content: space-evenly;
+            overflow: scroll;
+            margin-left: -16px;
+            margin-right: -16px;
+            padding-left: 16px;
+            padding-right: 16px;
+            scrollbar-width: none;
+        }
+
+        /* Method headers are handled in specific media queries */
+
+        /* 针对更小屏幕的额外优化 */
+        @media (max-width: 480px) {
+
+            /* Smaller buttons for very small screens */
+            .audio-control .speed-button,
+            .audio-control .play-pause-button,
+            .audio-control .audio-button {
+                width: 48px !important;
+                height: 48px !important;
+                border-radius: 24px !important;
+                background-size: 20px !important;
+            }
+
+            /* Adjust positioning for smaller buttons */
+            .audio-control .speed-button {
+                left: calc(50% - 76px);
+                /* Left position */
+            }
+
+            .audio-control .play-pause-button {
+                left: calc(50% - 24px);
+                /* Center position */
+            }
+
+            .audio-control .audio-button {
+                left: calc(50% + 28px);
+                /* Right position */
+            }
+
+            .speed-button::after {
+                content: "4x";
+                bottom: 4px;
+                font-size: 8px;
+            }
+
+            #intro h1 {
+                font-size: clamp(28px, 7vw, 48px);
+                margin: 40px 0 16px 0;
+            }
+
+            #intro h2 {
+                font-size: clamp(12px, 3.5vw, 16px);
+                margin: 16px 0 32px 0;
+            }
+
+            section {
+                padding: 20px 12px;
+            }
+
+            .text {
+                margin-bottom: 24px;
+            }
+
+            .grid:not(.grid-noslide)>* {
+                width: calc(100vw - 32px);
+                min-width: 260px;
+                max-height: 50vh;
+            }
+
+            .video-player {
+                min-height: 150px;
+            }
+
+            .audio-button-mobile {
+                right: 16px;
+                bottom: 16px;
+                width: 48px;
+                height: 48px;
+                border-radius: 24px;
+            }
+
+            a.external {
+                bottom: 16px;
+                left: 12px;
+                width: calc(100vw - 24px);
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+
+            .page-select>div {
+                padding: 6px 10px;
+                font-size: 13px;
+            }
+
+            #intro img {
+                max-width: 95vw !important;
+                margin-bottom: -30px !important;
+            }
+        }
+
+        /* 针对横屏手机的优化 */
+        @media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+            #intro {
+                height: auto;
+                min-height: 100vh;
+                padding: 40px 0;
+            }
+
+            #intro h1 {
+                font-size: clamp(24px, 4vw, 36px);
+                margin: 20px 0 16px 0;
+            }
+
+            #intro h2 {
+                font-size: clamp(12px, 2.5vw, 16px);
+                margin: 16px 0 24px 0;
+            }
+
+            #intro .background-video {
+                height: 80vh;
+            }
+
+            section {
+                padding: 24px 16px;
+            }
+
+            .grid:not(.grid-noslide)>* {
+                max-height: 40vh;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <section id="intro">
+
+        <div class="background-video">
+            <video muted loop playsinline preload="none" src="videos/ultra-long/svi/water.mp4"></video>
+        </div>
+        <div class="content">
+            <div class="text">
+                <!-- <h3>SVI</h3> -->
+                <img src="assets/logo_white.png" alt="Logo"
+                    style="max-width: 600px; height: auto; margin-bottom: -80px;">
+                <h1>Infinite-Length Video Generation with Error Recycling</h1>
+                <p>PS: The background video is generated by our Stable Video Infinity</p>
+                <h2>                        
+                <span class="author-block">
+                    <a href="https://wymancv.github.io/wuyang.github.io/">Wuyang Li</a><sup>1</sup>,
+                </span>
+                <span class="author-block">
+                    <a href="https://scholar.google.com/citations?user=sHKkAToAAAAJ&hl=zh-CN">Wentao Pan</a><sup>1,2</sup>,
+                </span>
+                <span class="author-block">
+                    <a href="https://scholar.google.com/citations?user=Y2Oth4MAAAAJ&hl=zh-TW">Po-Chien Luan</a><sup>1</sup>,
+                </span>
+                <span class="author-block">
+                    <a href="https://scholar.google.com/citations?user=rpT0Q6AAAAAJ&hl=en">Yang Gao</a><sup>1</sup>,
+                </span>
+                <span class="author-block">
+                    <a href="https://scholar.google.com/citations?user=UIhXQ64AAAAJ&hl=zh-CN">Alexandre Alahi</a><sup>1</sup>
+                </span>
+
+
+                <div class="is-size-5 publication-authors">
+                    <span class="author-block"><sup>1</sup>VITA@EPFL,</span>
+                    <span class="author-block"><sup>2</sup>CUHK</span>
+                </div>
+
+
+            </h2>   
+            <a class="paper-button" href="" target="_blank" rel="noopener noreferrer">
+                <span class="icon">
+                    <!-- <i class="ai ai-arxiv"></i> -->
+                    <i class="fas fa-file-pdf"></i>
+                </span>
+                <span>
+                    Technique Report
+                </span>
+            </a>
+            <a class="paper-button" href="" target="_blank" rel="noopener noreferrer">
+
+                <span class="icon">
+                    <i class="fab fa-github"></i>
+                </span>
+                <span>
+                    Code
+                </span>
+            </a>
+            </div>
+
+        </div>
+        </div>
+    </section>
+
+    <section style="background: rgba(40, 40, 45, 0.8); padding: 24px calc(50vw - min(45vw, 1600px / 2)); border: none; border-top: 1px solid rgba(255, 235, 59, 0.3);">
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px 20px; border-radius: 8px; border: 1px solid rgba(255, 235, 59, 0.2); text-align: center;">
+            <p style="color: #ffeb3b; font-weight: 500; margin: 0 0 8px 0; font-size: 16px;">⚠️ Important Note</p>
+            <p style="color: #fff; margin: 0; font-size: 14px; line-height: 1.5;">All videos displayed on this website have been compressed for web delivery, which may result in reduced visual quality compared to the original generated content. The compression is necessary to ensure optimal loading times and bandwidth efficiency.</p>
+        </div>
+    </section>
+
+
+
+    <section id="avatar">
+        <div class="text">
+            <h1>
+                Consistent Video Generation
+            </h1>
+            <h2>
+                Use one text prompt to control the motion and scene dynamics of the entire video sequence
+            </h2>
+            <p>
+                This setting aims to generate temporally coherent videos in a homogeneous scene controlled by a single text prompt, which aligns with the previous long video objective.
+            </p>
+        </div>
+
+        <div class="method-comparison">
+            <div class="method-headers">
+                <div class="method-header streaming">
+                    <h3>StreamingT2V [1]</h3>
+                </div>
+                <div class="method-header framepack">
+                    <h3>FramePack [2]</h3>
+                </div>
+                <div class="method-header svi">
+                    <h3>Stable Video Infinity (SVI-Shot, Ours)</h3>
+                </div>
+            </div>
+
+            <div class="grid">
+
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/consistent/streamingt2v/Boat.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/consistent/framepack/Boat.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/consistent/svi/Boat.mp4"></video>
+                </div>
+
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">A sleek white motor yacht speeds across the turquoise blue sea, leaving a dramatic wake of white foam behind it under a clear blue sky.</div>
+            </div>
+            
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none"
+                        src="videos/consistent/streamingt2v/Epephant.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/consistent/framepack/Elephant.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/consistent/svi/Elephant.mp4"></video>
+                </div>
+
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">A mother elephant and her calf stand together in a grassy field under a clear blue sky, with the mother elephant appearing protective and the calf nestled close to her side.</div>
+            </div>
+
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none"
+                        src="videos/consistent/streamingt2v/Snow.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/consistent/framepack/Snow.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/consistent/svi/Snow.mp4"></video>
+                </div>
+
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">A person clad in dark winter attire walks through a heavy snowstorm, their figure partially obscured by swirling snowflakes, creating a stark contrast against the snowy street beneath them.</div>
+            </div>
+
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none"
+                        src="videos/consistent/streamingt2v/Train.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/consistent/framepack/Train.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/consistent/svi/Train.mp4"></video>
+                </div>
+
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">A modern Alstom Adessia train, painted in a sleek white design with green and red accents, speeds along tracks surrounded by lush greenery under a clear blue sky, with distant buildings visible in the background.</div>
+            </div>
+
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none"
+                        src="videos/consistent/streamingt2v/Zoo.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/consistent/framepack/Zoo.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/consistent/svi/Zoo.mp4"></video>
+                </div>
+
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">A family, including a mother and her children, are feeding a giraffe at a zoo, with the children extending branches of leaves towards the giraffe through a fence.</div>
+            </div>
+        </div>
+        <div class="audio-button audio-button-mobile"></div>
+    </section>
+
+    <section id="avatar">
+        <div class="text">
+            <h1>
+                Creative Video Generation
+            </h1>
+            <h2>
+                Use a text prompt stream to generate short films with specific storylines, where each 5-second clip is controlled by one different text prompt
+            </h2>
+            <p>
+                This setting targets the needs of vloggers (e.g., TikTok) for shot video creation, emphasizing moderate scene transitions.
+            </p>
+        </div>
+
+        <div class="method-comparison">
+            <div class="method-headers">
+                <div class="method-header streaming">
+                    <h3>StreamingT2V [1]</h3>
+                </div>
+                <div class="method-header framepack">
+                    <h3>FramePack [2]</h3>
+                </div>
+                <div class="method-header svi">
+                    <h3>Stable Video Infinity (SVI-Film, Ours)</h3>
+                </div>
+            </div>
+
+            <div class="grid">
+
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/streamingt2v/Music.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/framepack/Music.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/svi/Music.mp4"></video>
+                </div>
+
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">A band is performing energetically on stage under purple and green lights.<br>
+                The lead guitarist bends forward, his passion for the music evident in every movement.<br>
+                Behind him, another musician strums his guitar with intensity, lost in the rhythm.<br>
+                The drummer, partially obscured by the drums, maintains a steady beat.<br>
+                The bassist stands at the back, his fingers dancing over the strings of his instrument.<br>
+                The audience is captivated, their faces illuminated by the stage lights.<br>
+                As the performance progresses, the lead singer joins the band, adding vocals to the mix.<br>
+                The lighting changes, shifting from green to blue as the song transitions.<br>
+                A smoke machine introduces wisps of fog that swirl around the performers, enhancing the atmosphere.<br>
+                The lead guitarist's long hair flows with the movement of his body, a beautiful sight against the backdrop of the stage.</div>
+            </div>
+            
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/streamingt2v/Family.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/framepack/Family.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/svi/Family.mp4"></video>
+                </div>
+
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">The image depicts a woman and a young girl in a kitchen setting, engaged in some form of cleaning or craft activity.<br>
+                The woman is wearing a light-colored, short-sleeved top with a subtle pattern and has a tattoo visible on her left arm. She is also wearing pink rubber gloves.<br>
+                The young girl, standing beside her, is dressed in a sleeveless white shirt adorned with colorful dots and stripes, complemented by a large pink bow on her head.<br>
+                Both appear focused and content as they work together at a counter.<br>
+                As the woman guides the girl through the activity, she picks up a spray bottle filled with a liquid, possibly a cleaning solution.<br>
+                The girl reaches out to touch the counter, exploring its texture or looking for something specific.<br>
+                The woman explains the next step of their task, pointing towards a set of cleaning brushes and a bucket nearby.<br>
+                The girl reaches for one of the brushes, seemingly ready to assist her mother.<br>
+                The woman demonstrates how to use the spray bottle effectively, showing the girl to aim it carefully at a surface.<br>
+                The girl watches intently as her mother sprays the solution onto a surface, likely a countertop or a table.</div>
+            </div>
+
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/streamingt2v/Cat.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/framepack/Cat.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/svi/Cat.mp4"></video>
+                </div>
+
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">A Siamese kitten rests snugly inside a straw hat, its head slightly tilted as it gazes curiously to the side.<br>
+                The kitten decides to explore the room and jumps out of the hat onto the soft carpet below.<br>
+                The kitten sees a feather toy and immediately pounces on it, chasing it around the living room.<br>
+                The feather toy becomes stuck in a corner, causing the kitten to climb up a nearby piece of furniture to reach it.<br>
+                As the kitten plays with the feather toy, it accidentally scratches the armrest of the sofa.<br>
+                The owner notices the scratch mark and gently removes the kitten from the furniture, placing it back into the hat for safety.<br>
+                The kitten, still playful, decides to investigate a box that has been moved to the floor.<br>
+                Inside the box, the kitten discovers a small toy mouse, which it pounces on with great enthusiasm.<br>
+                The kitten's excitement grows as it chases the toy mouse around the house, causing some minor chaos.<br>
+                After a while, the kitten tires itself out and falls asleep on the living room floor, still clutching the toy mouse.</div>
+            </div>
+
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/streamingt2v/Music2.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/framepack/Music2.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/svi/Music2.mp4"></video>
+                </div>
+
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">The drummer is seated behind a drum set with a cymbal in the foreground, ready to play.<br>
+                The drummer's hand moves swiftly, striking the snare drum with precision.<br>
+                A slight shimmer of light reflects off the metallic surfaces of the drums and cymbals.<br>
+                The sound of the drumsticks hitting the drumheads resonates through the air.<br>
+                The drummer's foot taps rhythmically on the bass drum pedal.<br>
+                A small audience gathers around, their attention captivated by the performance.<br>
+                The drummer switches to playing the bass drum, creating a powerful beat.<br>
+                The cymbal in the foreground glints in the stage lights as it is struck.<br>
+                The drummer adjusts the tension on one of the drum heads for better sound quality.<br>
+                A soft, melodic tone emerges from the snare drum, adding depth to the music.</div>
+            </div>
+
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/streamingt2v/Cook.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/framepack/Cook.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/svi/Cook.mp4"></video>
+                </div>
+
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">A beautifully plated dish of meat and vegetables sits elegantly on a dark gray plate against a deep blue tablecloth.<br>
+                The chef carefully arranges microgreens on top of the meat, ensuring they are evenly distributed.<br>
+                A diner approaches the table, admiring the vibrant colors and textures of the dish before taking their seat.<br>
+                The diner begins to cut into the meat with a sharp knife, revealing a perfectly cooked interior.<br>
+                The sizzling sound of the meat cooking in a pan can be heard faintly from the kitchen.<br>
+                The diners are served with a side of creamy mashed potatoes, adding a comforting element to the meal.<br>
+                A glass of red wine is poured, complementing the rich flavors of the meat and vegetables.<br>
+                The meal is accompanied by a delicate salad, offering a refreshing contrast to the main course.<br>
+                The chef presents the dish to the table, garnishing it with a sprinkle of freshly ground black pepper for added flavor.<br>
+                The diner takes a bite of the meat, savoring the tender texture and savory taste.</div>
+            </div>
+        </div>
+        <div class="audio-button audio-button-mobile"></div>
+    </section>
+
+
+
+    <section id="avatar">
+        <div class="text">
+            <h1>
+                Ultra-Long Creative Generation
+            </h1>
+            <h2>
+                Use a text prompt stream to generate long stories, where each 5-second clip is
+                controlled by one different text prompt
+            </h2>
+            <p>
+                This setting targets vlogger use cases (e.g., TikTok), emphasizing storytelling with plausible scene
+                transitions and exciting contents. All methods are conditioned on the same prompts. In the compared
+                methods, accumulated errors manifest as (1) failed text following, (2) degraded motion, and (3) visual
+                artifacts.
+            </p>
+        </div>
+
+
+        <div class="method-comparison">
+            <div class="method-headers">
+                <div class="method-header streaming">
+                    <h3>Wan 2.1 [3]</h3>
+                </div>
+                <div class="method-header framepack">
+                    <h3>FramePack [2]</h3>
+                </div>
+                <div class="method-header svi">
+                    <h3>Stable Video Infinity (SVI-Film, Ours)</h3>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/ultra-long/wan/city.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos//ultra-long/framepack/city.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/ultra-long/svi/city.mp4"></video>
+                </div>
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">
+                    <div class="caption-toggle" onclick="toggleCaption(this)">Show Prompts</div>
+                    <div class="caption-content">In the pre-dawn quiet, the massive highway interchange lies dormant, a concrete titan asleep. A network of empty asphalt ribbons weaves between darkened buildings and sleeping forests. The first vehicle appears, its headlights a lonely streak of white light in the gloom. The sun begins to rise, casting a soft orange glow on the highest ramps and overpasses. The city's streetlights flicker off one by one as the sky brightens. A trickle of early commuters begins, their cars spaced far apart. The interchange is the city's circulatory system, and its heart is beginning to beat. The first rays of sunlight reveal the autumn colors of the trees nestled between the ramps. The quiet hum of the first wave of traffic is the sound of the city waking up. The great daily migration is about to begin. Within minutes, the trickle of cars becomes a steady stream. Thousands of individual journeys converge on this single, complex point. The interchange channels the flow, sorting cars onto different paths with engineered precision. The morning rush hour builds, a river of steel and glass flooding the concrete banks. From above, the patterns of movement are hypnotic and complex. White headlights pour into the city center; red taillights are few. The interchange operates at peak efficiency, a testament to decades of planning. Each car is a single data point in a massive, real-time logistical puzzle. The collective sound grows from a hum to a constant, powerful roar. The city is now fully awake, inhaling its workforce from the surrounding suburbs. Buses navigate their dedicated lanes, carrying hundreds of passengers at a time. Delivery trucks rumble along, carrying the goods that keep the city running. The sun climbs higher, glinting off a million windshields and painted roofs. The interchange seems to breathe, managing the relentless pulse of traffic. Every ramp and every lane is now filled, moving in a controlled, chaotic dance. It is a marvel of modern infrastructure, a solution to the problem of movement. The surrounding trees, in their autumn finery, provide a natural contrast to the grey concrete. The system is designed for flow, for perpetual, uninterrupted motion. For a few hours, this massive structure is one of the busiest places on the planet. The morning rush finally begins to ease as commuters reach their destinations. The traffic thins slightly, moving faster now, the pressure lessened. Midday traffic is different: shoppers, tourists, and commercial vehicles take over. The pace is less frantic but still constant. The sun is directly overhead, eliminating all shadows in the interchange's canyons. The system continues its work, flawlessly directing the city's lifeblood. Then, on a crucial, high-level ramp, a plume of white smoke erupts from a car's engine. The car sputters to a halt, instantly blocking a critical artery. The driver behind brakes sharply, and the car behind them fails to stop in time. A minor collision occurs, but the blockage is now complete. The ripple effect is instantaneous and unforgiving. The flow of traffic behind the incident stops completely. A solid line of red taillights begins to snake backward down the ramp. Within minutes, the congestion spills onto the main highway below. The interchange's perfect rhythm is broken. The system, designed for motion, is now causing a massive standstill. Horns begin to honk, a symphony of frustration rising from the jam. From the air, the traffic jam looks like a clot, spreading through the arteries. Thousands of people are now trapped, their journeys indefinitely delayed. The city's inhalation has been choked off. Emergency services are dispatched, their sirens wailing in the distance. A police car and a tow truck fight their way through the congested lanes.</div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/ultra-long/wan/water.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos//ultra-long/framepack/water.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/ultra-long/svi/water.mp4"></video>
+                </div>
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">
+                    <div class="caption-toggle" onclick="toggleCaption(this)">Show Prompts</div>
+                    <div class="caption-content">The river continues to flow rapidly forward, churning over submerged rocks. A large wave of white water surges upwards and then crashes downwards. A piece of driftwood is carried forward by the current. The clouds in the sky drift slowly forward from right to left. A single pine needle falls downwards from a tree into the water. A fish jumps upwards from the river, then splashes back down. The camera slowly zooms in, moving forward to focus on the rapids. The camera pans to the left, revealing more of the rocky shoreline. A small squirrel runs quickly upwards along the trunk of a pine tree. The squirrel runs back downwards and disappears into the undergrowth. The water level of the river begins to rise slowly upwards. The river's current becomes stronger, moving forward with more force. A kayaker in a yellow kayak appears upstream, paddling forward. The kayaker skillfully navigates the rapids, moving left and right. The kayaker's paddle dips downwards into the water on the left side. The kayaker's paddle dips downwards into the water on the right side. The kayaker successfully passes the rapids and moves forward downstream. An eagle soars in circles high above the river. The eagle folds its wings and dives straight downwards towards the water. The eagle pulls up just above the water, a fish in its talons, and flies upwards. The eagle flies away, moving backward up the river. A large brown bear emerges from the forest on the right, moving forward. The bear walks down to the river's edge. The bear dips its head downwards to drink from the river. The bear then wades into the water, moving forward. The bear attempts to catch a fish with its paw, swiping downwards. The bear walks back out of the river and moves backward into the forest. Dark clouds begin to roll in, moving forward from the background. The sunlight fades as the clouds cover the sun. Rain begins to fall downwards, creating small splashes on the river's surface. Lightning flashes in the distance, illuminating the sky. The rain becomes heavier, falling straight down. The river's water level rises upwards more quickly. A small stream of rainwater flows downwards over the rocks on the right. The storm passes, and the clouds move away to the left. The sun reappears, and its light moves forward across the landscape. A rainbow forms, arching upwards over the river. The sun begins to set, moving downwards towards the horizon. The sky turns orange and pink, reflecting on the water's surface. The sun disappears, and the scene darkens into twilight. The moon rises upwards, casting a silvery light downwards. A bat flies erratically back and forth above the river. An owl, perched on a high branch, flies downwards from its perch. The camera viewpoint shifts, descending downwards to water level. The camera moves forward, skimming just above the surface of the rapids. The camera ascends straight upwards for a top-down view of the river. The season changes to autumn; the deciduous trees turn yellow. Yellow leaves fall downwards and are carried forward by the river. The season changes to winter; snow begins to fall downwards. The snow covers the rocks and trees in a layer of white. Ice begins to form inwards from the edges of the river.</div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/ultra-long/wan/bicycle.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos//ultra-long/framepack/bicycle.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/ultra-long/svi/bicycle.mp4"></video>
+                </div>
+            </div>
+            <div class="row-caption">
+                <div class="video-caption">
+                    <div class="caption-toggle" onclick="toggleCaption(this)">Show Prompts</div>
+                    <div class="caption-content">                
+                    A man and a young girl ride their bikes along a sun-dappled path.
+                    The cobblestones make a gentle rumbling sound beneath their tires.
+                    Lush green trees line the path, their leaves rustling in the breeze.
+                    The man smiles, watching the girl pedal confidently beside him.
+                    She glances at him, her face full of joy for their shared adventure.
+                    They ride in a comfortable silence, enjoying the perfect spring afternoon.
+                    Sunlight filters through the leaves, creating shifting patterns on the ground.
+                    They decide to bike towards the old, historic part of the city.
+                    The man points towards a distant spire, suggesting it as their destination.
+                    The girl agrees enthusiastically, pedaling a little faster.
+                    They leave the park path and merge onto a quiet city street.
+                    Old brick buildings with colorful flower boxes line their route.
+                    They pass a bustling outdoor cafe, the air filled with the scent of coffee and pastries.
+                    They ring their bells cheerfully at a stray cat sunning itself on a wall.
+                    The man points out interesting architectural details on the buildings they pass.
+                    The girl listens, her imagination sparked by stories of the city's past.
+                    They decide to take a shortcut down a narrow, unfamiliar alleyway.
+                    The alley opens up into a small, forgotten courtyard they've never seen before.
+                    In the center of the courtyard stands a tall, old clock tower, silent and imposing.</div>
+                </div>
+            </div>
+
+            </div>
+        </div>
+        <div class="audio-button audio-button-mobile"></div>
+    </section>
+
+
+    <section id="avatar">
+        <div class="text">
+            <h1>
+                Multimodal Conditional Generation
+            </h1>
+            <h2>
+                Audio-guided talking animation.
+            </h2>
+
+        </div>
+
+        <div class="method-comparison">
+            <div class="method-headers">
+                <div class="method-header streaming">
+                    <h3>Wan 2.1 [3]</h3>
+                </div>
+                <div class="method-header framepack">
+                    <h3>MultiTalk [4]</h3>
+                </div>
+                <div class="method-header svi">
+                    <h3>Stable Video Infinity (SVI-Talk, Ours)</h3>
+                </div>
+            </div>
+
+            <div class="grid">
+
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/conditional/talking/wan.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/conditional/talking/multitalk.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/conditional/talking/svi.mp4"></video>
+                </div>
+
+            </div>
+            <div class="audio-button audio-button-mobile"></div>
+    </section>
+
+    <section id="avatar">
+        <div class="text">
+            <h1>
+                Multimodal Conditional Generation
+            </h1>
+            <h2>
+                Skeleton-guided dancing animation.
+            </h2>
+
+        </div>
+
+        <div class="method-comparison">
+            <div class="method-headers">
+                <div class="method-header streaming">
+                    <h3>Pose Video</h3>
+                </div>
+                <div class="method-header framepack">
+                    <h3>UniAnimate-DiT [5]</h3>
+                </div>
+                <div class="method-header svi">
+                    <h3>Stable Video Infinity (SVI-Dance, Ours)</h3>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/conditional/dancing/pose.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/conditional/dancing/uni.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/conditional/dancing/svi.mp4"></video>
+                </div>
+            </div>
+
+
+        </div>
+        </div>
+        <div class="audio-button audio-button-mobile"></div>
+    </section>
+
+
+    <section id="avatar">
+        <div class="text">
+            <h1>
+                Generalization to Other Domains
+            </h1>
+            <h2>
+                Let your imagination run wild and generate cartoon animations from text prompt streams.
+            </h2>
+        </div>
+
+        <div class="method-comparison">
+
+            <div class="grid">
+            <div class="video-player audio-control span22">
+                <video muted loop playsinline preload="none" src="videos/ultra-long/svi/tom.mp4"></video>
+            </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/svi/Fish.mp4"></video>
+                </div>
+                <div class="video-player audio-control duration-indicator">
+                    <video muted loop playsinline preload="none" src="videos/creative/svi/tom.mp4"></video>
+                </div>
+            </div>
+
+        </div>
+        <div class="method-comparison">
+
+            <div class="grid">
+
+            <div class="video-player audio-control duration-indicator">
+                <video muted loop playsinline preload="none" src="videos/comic/rick.mp4"></video>
+            </div>
+            <div class="video-player audio-control span22">
+                <video muted loop playsinline preload="none" src="videos/comic/dragonball.mp4"></video>
+            </div>
+            <div class="video-player audio-control duration-indicator">
+                <video muted loop playsinline preload="none" src="videos/comic/ironman.mp4"></video>
+            </div>
+            </div>
+
+        </div>
+        </div>
+        <div class="audio-button audio-button-mobile"></div>
+    </section>
+
+
+    <section
+        style="background-color: #000; padding: 80px 16px 160px 16px; display: flex; justify-content: center; align-items: center; border: none;">
+        <div class="text" style="max-width: 1600px; margin: 0 auto;">
+
+            <p>[1] Henschel, R., Khachatryan, L., Poghosyan, H., Hayrapetyan, D., Tadevosyan, V., Wang, Z., ... & Shi,
+                H. (2025). Streamingt2v: Consistent, dynamic, and extendable long video generation from text. In <i>CVPR
+                    2025</i>.</p>
+            
+            <p>[2] Zhang, L., & Agrawala, M. (2025). Packing input frame context in next-frame prediction models for
+                video generation. <i>arXiv preprint arXiv:2504.12626</i>.</p>
+            <p>[3] Wan, T., Wang, A., Ai, B., Wen, B., Mao, C., Xie, C. W., ... & Liu, Z. (2025). Wan: Open and advanced
+                large-scale video generative models. <i>arXiv preprint arXiv:2503.20314</i>.</p>
+            <p>[4] Kong, Z., Gao, F., Zhang, Y., Kang, Z., Wei, X., Cai, X., ... & Luo, W. (2025). Let Them Talk:
+                Audio-Driven Multi-Person Conversational Video Generation. In <i>NeurIPS 2025</i>.</p>
+            <p>[5] Wang, X., Zhang, S., Tang, L., Zhang, Y., Gao, C., Wang, Y., & Sang, N. (2025). Unianimate-dit: Human
+                image animation with large-scale video diffusion transformer. <i>arXiv preprint arXiv:2504.11289</i>.
+            </p>
+        </div>
+    </section>
+
+
+    <!-- <section id="team">
+        <div class="content">
+            <p>Some materials and video sources are derived from real videos. The generated content is for academic use
+                only and commercial use is not permitted.</p>
+        </div>
+    </section> -->
+
+
+    <script>
+        // Lazy load
+        const lazyLoadObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.play();
+                } else {
+                    entry.target.pause();
+                }
+            });
+        }, { rootMargin: '500px' });
+        document.querySelectorAll("video:not(.no-autoplay)").forEach(video => {
+            lazyLoadObserver.observe(video);
+            video.addEventListener("pointerdown", () => video.play());
+        });
+
+        // Audio control with external audio files
+        const body = document.querySelector("body");
+        let globalmuted = true;
+        const isNarrow = () => window.innerWidth < 512;
+        // Global shared audio for all non-talk videos
+        let sharedBGMAudio = null;
+        let tomAudio = null;
+        let currentPlayingAudio = null;
+
+        // Function to get or create shared BGM audio
+        function getSharedBGMAudio() {
+            if (!sharedBGMAudio) {
+                sharedBGMAudio = new Audio('audio/summer.mp3');
+                sharedBGMAudio.loop = true;
+                sharedBGMAudio.volume = 0.5;
+                sharedBGMAudio.preload = 'metadata';
+
+                // Error handling
+                sharedBGMAudio.onerror = function () {
+                    console.warn('Failed to load shared BGM audio file: audio/summer.mp3');
+                };
+            }
+            return sharedBGMAudio;
+        }
+
+        // Function to get or create Tom-specific audio
+        function getTomAudio() {
+            if (!tomAudio) {
+                tomAudio = new Audio('audio/tom.mp3');
+                tomAudio.loop = true;
+                tomAudio.volume = 0.5;
+                tomAudio.preload = 'metadata';
+
+                // Error handling
+                tomAudio.onerror = function () {
+                    console.warn('Failed to load Tom audio file: audio/tom.mp3');
+                };
+            }
+            return tomAudio;
+        }
+
+        // Function to determine if a video should use original audio (for talk sections)
+        function shouldUseOriginalAudio(videoSrc) {
+            return videoSrc.includes('/talking/');
+        }
+
+        // Function to determine if a video is Tom.mp4
+        function isTomVideo(videoSrc) {
+            return videoSrc.includes('tom.mp4');
+        }
+
+        document.querySelectorAll(".audio-control").forEach(wrapper => {
+            const video = wrapper.querySelector("video");
+            const useOriginalAudio = shouldUseOriginalAudio(video.src);
+            const isTom = isTomVideo(video.src);
+
+            // Assign appropriate audio for non-talk videos
+            if (!useOriginalAudio) {
+                if (isTom) {
+                    wrapper.externalAudio = getTomAudio();
+                    wrapper.setAttribute('data-audio-type', 'tom');
+                } else {
+                    wrapper.externalAudio = getSharedBGMAudio();
+                    wrapper.setAttribute('data-audio-type', 'external');
+                }
+            }
+
+            // Set data attributes for styling
+            wrapper.setAttribute('data-has-audio', 'true');
+            if (useOriginalAudio) {
+                wrapper.setAttribute('data-audio-type', 'original');
+            }
+            // Note: external and tom types are already set above
+
+            const button = document.createElement("div");
+
+            button.className = "audio-button";
+            button.onclick = function () {
+                globalmuted = !globalmuted;
+                body.setAttribute("muted", globalmuted);
+
+                // Handle audio playbook
+                if (useOriginalAudio) {
+                    // For talk videos, control original video audio
+                    video.muted = globalmuted;
+                } else if (wrapper.externalAudio) {
+                    // For other videos, control external audio (shared BGM or Tom's audio)
+                    if (!globalmuted) {
+                        // Stop any other audio that might be playing
+                        if (currentPlayingAudio && currentPlayingAudio !== wrapper.externalAudio) {
+                            currentPlayingAudio.pause();
+                            // Update other audio controls
+                            document.querySelectorAll('.audio-control').forEach(el => {
+                                if (el.externalAudio === currentPlayingAudio) {
+                                    el.setAttribute('data-audio-playing', 'false');
+                                }
+                            });
+                        }
+
+                        wrapper.externalAudio.play().then(() => {
+                            if (isTom) {
+                                // Update Tom video controls
+                                document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
+                                    el.setAttribute('data-audio-playing', 'true');
+                                });
+                            } else {
+                                // Update shared BGM controls
+                                document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
+                                    el.setAttribute('data-audio-playing', 'true');
+                                });
+                            }
+                            currentPlayingAudio = wrapper.externalAudio;
+                        }).catch(e => console.log('Audio play failed:', e));
+                    } else {
+                        wrapper.externalAudio.pause();
+                        if (isTom) {
+                            // Update Tom video controls
+                            document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
+                                el.setAttribute('data-audio-playing', 'false');
+                            });
+                        } else {
+                            // Update shared BGM controls
+                            document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
+                                el.setAttribute('data-audio-playing', 'false');
+                            });
+                        }
+                        if (currentPlayingAudio === wrapper.externalAudio) {
+                            currentPlayingAudio = null;
+                        }
+                    }
+                }
+            }
+
+            wrapper.addEventListener("mouseenter", () => {
+                if (!isNarrow()) {
+                    if (useOriginalAudio) {
+                        video.muted = globalmuted;
+                    } else if (wrapper.externalAudio && !globalmuted) {
+                        // Stop any other audio that might be playing
+                        if (currentPlayingAudio && currentPlayingAudio !== wrapper.externalAudio) {
+                            currentPlayingAudio.pause();
+                            // Update other audio controls
+                            document.querySelectorAll('.audio-control').forEach(el => {
+                                if (el.externalAudio === currentPlayingAudio) {
+                                    el.setAttribute('data-audio-playing', 'false');
+                                }
+                            });
+                        }
+
+                        wrapper.externalAudio.play().then(() => {
+                            if (isTom) {
+                                // Update Tom video controls
+                                document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
+                                    el.setAttribute('data-audio-playing', 'true');
+                                });
+                            } else {
+                                // Update shared BGM controls
+                                document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
+                                    el.setAttribute('data-audio-playing', 'true');
+                                });
+                            }
+                            currentPlayingAudio = wrapper.externalAudio;
+                        }).catch(e => console.log('Audio play failed:', e));
+                    }
+                }
+            });
+
+            wrapper.addEventListener("mouseleave", () => {
+                if (!isNarrow()) {
+                    if (useOriginalAudio) {
+                        video.muted = true;
+                    } else if (wrapper.externalAudio) {
+                        wrapper.externalAudio.pause();
+                        if (isTom) {
+                            // Update Tom video controls
+                            document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
+                                el.setAttribute('data-audio-playing', 'false');
+                            });
+                        } else {
+                            // Update shared BGM controls
+                            document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
+                                el.setAttribute('data-audio-playing', 'false');
+                            });
+                        }
+                        if (currentPlayingAudio === wrapper.externalAudio) {
+                            currentPlayingAudio = null;
+                        }
+                    }
+                }
+            });
+
+            wrapper.appendChild(button);
+
+            // Add play/pause control button
+            const playPauseButton = document.createElement("div");
+            playPauseButton.className = "play-pause-button";
+
+            // Update button appearance based on video state
+            const updatePlayPauseButton = () => {
+                if (video.paused) {
+                    playPauseButton.classList.remove("playing");
+                } else {
+                    playPauseButton.classList.add("playing");
+                }
+            };
+
+            playPauseButton.onclick = function (e) {
+                e.stopPropagation();
+                if (video.paused) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+                updatePlayPauseButton();
+            }
+
+            // Listen for video state changes
+            video.addEventListener('play', updatePlayPauseButton);
+            video.addEventListener('pause', updatePlayPauseButton);
+            video.addEventListener('loadstart', updatePlayPauseButton);
+
+            // Initialize button state
+            updatePlayPauseButton();
+
+            wrapper.appendChild(playPauseButton);
+
+            // Add speed control button
+            const speedButton = document.createElement("div");
+            speedButton.className = "speed-button";
+            let isSpeedUp = false;
+
+            speedButton.onclick = function (e) {
+                e.stopPropagation();
+                isSpeedUp = !isSpeedUp;
+                if (isSpeedUp) {
+                    video.playbackRate = 4.0;
+                    speedButton.classList.add("active");
+                } else {
+                    video.playbackRate = 1.0;
+                    speedButton.classList.remove("active");
+                }
+            }
+
+            // Reset speed when video restarts
+            video.addEventListener('loadstart', () => {
+                video.playbackRate = 1.0;
+                isSpeedUp = false;
+                speedButton.classList.remove("active");
+            });
+
+            // Mobile touch events to show speed button
+            let touchTimeout;
+            wrapper.addEventListener('touchstart', () => {
+                speedButton.style.opacity = '1';
+                clearTimeout(touchTimeout);
+            });
+
+            wrapper.addEventListener('touchend', () => {
+                touchTimeout = setTimeout(() => {
+                    if (!isSpeedUp) {
+                        speedButton.style.opacity = '';
+                    }
+                }, 3000);
+            });
+
+            wrapper.appendChild(speedButton);
+        });
+
+        // Global mobile audio control
+        document.querySelectorAll(".audio-button-mobile").forEach(button => {
+            button.onclick = () => {
+                globalmuted = !globalmuted;
+                body.setAttribute("muted", globalmuted);
+
+                // Handle all audio elements
+                document.querySelectorAll(".audio-control").forEach(wrapper => {
+                    const video = wrapper.querySelector('video');
+                    const useOriginalAudio = shouldUseOriginalAudio(video.src);
+                    const isTom = isTomVideo(video.src);
+
+                    if (video.isIntersecting) {
+                        if (useOriginalAudio) {
+                            video.muted = globalmuted;
+                        } else if (wrapper.externalAudio) {
+                            if (!globalmuted) {
+                                // Stop any other audio that might be playing
+                                if (currentPlayingAudio && currentPlayingAudio !== wrapper.externalAudio) {
+                                    currentPlayingAudio.pause();
+                                    // Update other audio controls
+                                    document.querySelectorAll('.audio-control').forEach(el => {
+                                        if (el.externalAudio === currentPlayingAudio) {
+                                            el.setAttribute('data-audio-playing', 'false');
+                                        }
+                                    });
+                                }
+
+                                wrapper.externalAudio.play().then(() => {
+                                    if (isTom) {
+                                        // Update Tom video controls
+                                        document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
+                                            el.setAttribute('data-audio-playing', 'true');
+                                        });
+                                    } else {
+                                        // Update shared BGM controls
+                                        document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
+                                            el.setAttribute('data-audio-playing', 'true');
+                                        });
+                                    }
+                                    currentPlayingAudio = wrapper.externalAudio;
+                                }).catch(e => console.log('Audio play failed:', e));
+                            } else {
+                                wrapper.externalAudio.pause();
+                                if (isTom) {
+                                    // Update Tom video controls
+                                    document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
+                                        el.setAttribute('data-audio-playing', 'false');
+                                    });
+                                } else {
+                                    // Update shared BGM controls
+                                    document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
+                                        el.setAttribute('data-audio-playing', 'false');
+                                    });
+                                }
+                                if (currentPlayingAudio === wrapper.externalAudio) {
+                                    currentPlayingAudio = null;
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        const audioObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                const video = entry.target;
+                const wrapper = video.closest('.audio-control');
+                const useOriginalAudio = shouldUseOriginalAudio(video.src);
+                const isTom = isTomVideo(video.src);
+
+                if (entry.isIntersecting) {
+                    // Play audio if not muted and on mobile
+                    if (!globalmuted && isNarrow()) {
+                        if (useOriginalAudio) {
+                            video.muted = false;
+                        } else if (wrapper.externalAudio) {
+                            // Stop any other audio that might be playing
+                            if (currentPlayingAudio && currentPlayingAudio !== wrapper.externalAudio) {
+                                currentPlayingAudio.pause();
+                                // Update other audio controls
+                                document.querySelectorAll('.audio-control').forEach(el => {
+                                    if (el.externalAudio === currentPlayingAudio) {
+                                        el.setAttribute('data-audio-playing', 'false');
+                                    }
+                                });
+                            }
+
+                            wrapper.externalAudio.play().then(() => {
+                                if (isTom) {
+                                    // Update Tom video controls
+                                    document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
+                                        el.setAttribute('data-audio-playing', 'true');
+                                    });
+                                } else {
+                                    // Update shared BGM controls
+                                    document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
+                                        el.setAttribute('data-audio-playing', 'true');
+                                    });
+                                }
+                                currentPlayingAudio = wrapper.externalAudio;
+                            }).catch(e => console.log('Audio play failed:', e));
+                        }
+                    }
+                } else {
+                    // Pause audio when video is out of view (only on mobile)
+                    if (isNarrow()) {
+                        if (useOriginalAudio) {
+                            video.muted = true;
+                        } else if (wrapper.externalAudio) {
+                            wrapper.externalAudio.pause();
+                            if (isTom) {
+                                // Update Tom video controls
+                                document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
+                                    el.setAttribute('data-audio-playing', 'false');
+                                });
+                            } else {
+                                // Update shared BGM controls
+                                document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
+                                    el.setAttribute('data-audio-playing', 'false');
+                                });
+                            }
+                            if (currentPlayingAudio === wrapper.externalAudio) {
+                                currentPlayingAudio = null;
+                            }
+                        }
+                    }
+                }
+
+                video.isIntersecting = entry.isIntersecting;
+            });
+        }, { threshold: 0.5 });
+        document.querySelectorAll(".audio-control video").forEach(video => audioObserver.observe(video));
+
+        // Cleanup function to stop all audio when page unloads
+        window.addEventListener('beforeunload', () => {
+            if (sharedBGMAudio) {
+                sharedBGMAudio.pause();
+            }
+            if (tomAudio) {
+                tomAudio.pause();
+            }
+            // Also handle any talk videos with original audio
+            document.querySelectorAll('.audio-control[data-audio-type="original"] video').forEach(video => {
+                video.muted = true;
+            });
+        });
+
+        // Pause all audio when page becomes hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                document.querySelectorAll('.audio-control').forEach(wrapper => {
+                    const video = wrapper.querySelector('video');
+                    const useOriginalAudio = shouldUseOriginalAudio(video.src);
+
+                    if (useOriginalAudio) {
+                        video.muted = true;
+                    } else if (wrapper.externalAudio) {
+                        wrapper.externalAudio.pause();
+                        wrapper.setAttribute('data-audio-playing', 'false');
+                    }
+                });
+                currentPlayingAudio = null;
+            }
+        });
+
+        // Add duration indicator to all video players automatically
+        document.querySelectorAll(".video-player.audio-control").forEach(player => {
+            if (!player.classList.contains('duration-indicator')) {
+                player.classList.add('duration-indicator');
+            }
+        });
+
+        // progress bar.
+        document.querySelectorAll(".duration-indicator").forEach((wrapper) => {
+            const video = wrapper.querySelector("video");
+            const bar = document.createElement("div");
+            const barinner = document.createElement("div");
+            const time = document.createElement("div");
+
+            bar.className = "bar";
+            barinner.className = "barinner";
+            time.className = "time";
+
+            wrapper.appendChild(bar);
+            bar.appendChild(barinner);
+            wrapper.appendChild(time);
+
+            // Add click functionality to progress bar
+            bar.addEventListener("click", (e) => {
+                const rect = bar.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const barWidth = rect.width;
+                const clickPercent = Math.max(0, Math.min(1, clickX / barWidth));
+
+                if (!isNaN(video.duration)) {
+                    video.currentTime = clickPercent * video.duration;
+                }
+            });
+
+            // Create hover preview element
+            const hoverTime = document.createElement("div");
+            hoverTime.className = "hover-time";
+            hoverTime.style.cssText = `
+                    position: absolute;
+                    bottom: 35px;
+                    background: rgba(0, 0, 0, 0.9);
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    font-family: monospace;
+                    pointer-events: none;
+                    opacity: 0;
+                    transition: opacity 0.2s;
+                    z-index: 15;
+                `;
+            wrapper.appendChild(hoverTime);
+
+            // Add mouse move event for hover preview
+            bar.addEventListener("mousemove", (e) => {
+                if (!isNaN(video.duration)) {
+                    const rect = bar.getBoundingClientRect();
+                    const hoverX = e.clientX - rect.left;
+                    const barWidth = rect.width;
+                    const hoverPercent = Math.max(0, Math.min(1, hoverX / barWidth));
+                    const hoverTimeValue = hoverPercent * video.duration;
+
+                    hoverTime.textContent = format(hoverTimeValue);
+                    hoverTime.style.left = `${32 + hoverX - hoverTime.offsetWidth / 2}px`;
+                    hoverTime.style.opacity = "1";
+                }
+            });
+
+            bar.addEventListener("mouseleave", () => {
+                hoverTime.style.opacity = "0";
+            });
+
+            // Add touch events for mobile devices
+            let touchControlsTimeout;
+
+            wrapper.addEventListener("touchstart", () => {
+                wrapper.classList.add("show-controls");
+                clearTimeout(touchControlsTimeout);
+            });
+
+            wrapper.addEventListener("touchend", () => {
+                touchControlsTimeout = setTimeout(() => {
+                    wrapper.classList.remove("show-controls");
+                }, 3000); // Hide after 3 seconds
+            });
+
+            // Also handle click events for mobile
+            wrapper.addEventListener("click", (e) => {
+                if (window.innerWidth <= 640) {
+                    wrapper.classList.add("show-controls");
+                    clearTimeout(touchControlsTimeout);
+                    touchControlsTimeout = setTimeout(() => {
+                        wrapper.classList.remove("show-controls");
+                    }, 3000);
+                }
+            });
+
+            // Add hover effect to show cursor pointer
+            bar.style.cursor = "pointer";
+
+            function format(seconds) {
+                seconds = Math.round(seconds);
+                const minutes = Math.floor(seconds / 60);
+                seconds = seconds - (minutes * 60);
+                seconds = String(seconds);
+                seconds = seconds.length > 1 ? seconds : "0" + seconds;
+                return `${minutes}:${seconds}`;
+            }
+
+            function update() {
+                if (!isNaN(video.duration)) {
+                    barinner.style.width = `${video.currentTime / video.duration * 100}%`;
+                    time.innerText = `${format(video.currentTime)} / ${format(video.duration)}`;
+                } else {
+                    time.innerText = "";
+                }
+                requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        })
+
+        const shotsVideo = document.querySelector("#shots video");
+        const shotList = document.querySelector("#shots .shots-list");
+        const shotListItems = document.querySelectorAll("#shots .shots-list > div");
+        const shotTimesteps = Array.from(shotListItems).map(element => parseInt(element.getAttribute("timestep")));
+
+        shotListItems.forEach(element => {
+            element.addEventListener("click", () => {
+                const timestep = parseInt(element.getAttribute("timestep"));
+                shotsVideo.currentTime = timestep;
+            });
+        });
+
+        let lastShot = null;
+        shotsVideo.addEventListener("timeupdate", () => {
+            const currentTime = shotsVideo.currentTime;
+            const currentShot = shotTimesteps.findLastIndex(x => x < currentTime + 0.5);
+            if (currentShot != lastShot) {
+                if (lastShot != null) {
+                    shotListItems[lastShot].removeAttribute("selected");
+                }
+                shotListItems[currentShot].setAttribute("selected", true);
+                if (isNarrow() && Math.abs(shotList.scrollLeft - shotListItems[currentShot].offsetLeft) < 500) {
+                    shotList.scrollTo({
+                        left: shotListItems[currentShot].offsetLeft,
+                        behavior: "smooth"
+                    });
+                }
+                lastShot = currentShot;
+            }
+        })
+
+        document.addEventListener("scroll", () => {
+            const top = Math.max(Math.min(window.scrollY / 200, 1), 0);
+            document.documentElement.style.setProperty('--intro-scale', top)
+        })
+
+        document.querySelectorAll(".video-slider").forEach((slider) => {
+            // slider
+            const sliderButton = slider.querySelector(".slider");
+            const sliderVideo1 = slider.querySelector(".video1");
+            let sliding = false;
+            let slidePosition = 0.5;
+            let lastPointerX = null;
+            let lastSlidePosition = null;
+            sliderButton.addEventListener("pointerdown", e => {
+                sliding = true;
+                lastPointerX = e.clientX || e.touches[0].clientX;
+                lastSlidePosition = sliderButton.offsetLeft;
+                sliderButton.style.opacity = 1;
+            });
+            function handlemove(e) {
+                if (sliding) {
+                    e.preventDefault();
+                    let clientX = e.clientX || e.touches[0].clientX;
+                    let deltaX = clientX - lastPointerX;
+                    let ratio = (lastSlidePosition + deltaX) / slider.offsetWidth;
+                    ratio = Math.min(Math.max(ratio, 0.01), 0.99);
+                    sliderButton.style.left = `${ratio * 100}%`;
+                    sliderVideo1.style.width = `${ratio * 100}%`;
+                }
+            }
+            document.addEventListener("mousemove", handlemove);
+            document.addEventListener("touchmove", handlemove, { passive: false });
+            document.addEventListener("pointermove", handlemove, { passive: false });
+            document.addEventListener("pointerup", () => {
+                sliding = false;
+                sliderButton.style.opacity = null;
+            });
+
+            // sync video.
+            const video1 = slider.querySelector(".video1 video");
+            const video2 = slider.querySelector(".video2 video");
+            function sync() {
+                if (Math.abs(video2.currentTime - video1.currentTime) > 1 / 24) {
+                    video2.currentTime = video1.currentTime;
+                }
+                requestAnimationFrame(sync);
+            }
+            requestAnimationFrame(sync);
+
+            // full screen.
+            const fullscreenButton = slider.querySelector(".fullscreen");
+            if (!document.fullscreenEnabled) {
+                fullscreenButton.remove();
+            } else {
+                fullscreenButton.addEventListener("click", () => {
+                    if (!document.fullscreenElement) {
+                        slider.requestFullscreen();
+                        body.setAttribute("fullscreen", true);
+                    } else {
+                        document.exitFullscreen();
+                    }
+                })
+            }
+        })
+        document.addEventListener("fullscreenchange", () => {
+            if (document.fullscreenElement != null) {
+                body.setAttribute("fullscreen", "");
+            } else {
+                body.removeAttribute("fullscreen");
+            }
+        });
+
+
+        // features film
+        document.querySelectorAll(".feature-video").forEach(featureVideo => {
+            const video = featureVideo.querySelector("video.final-video");
+            featureVideo.addEventListener("click", e => {
+                video.currentTime = 0;
+                video.play();
+                video.requestFullscreen();
+                video.style.opacity = 1;
+            })
+            video.addEventListener("fullscreenchange", () => {
+                if (!document.fullscreenElement) {
+                    video.pause();
+                    video.style.opacity = 0;
+                }
+            })
+            video.addEventListener("ended", () => {
+                video.pause();
+                video.style.opacity = 0;
+                document.exitFullscreen();
+            })
+        });
+
+        document.querySelectorAll(".page-control").forEach(controller => {
+            controller.querySelectorAll(".page-select > div").forEach(selector => {
+                selector.addEventListener("click", () => {
+                    const oldSelector = controller.querySelector(".page-select > div[selected=true]");
+                    if (selector != oldSelector) {
+                        selector.setAttribute("selected", "true");
+                        oldSelector.setAttribute("selected", "false");
+
+                        const newTarget = selector.getAttribute("target");
+                        const oldTarget = oldSelector.getAttribute("target");
+
+                        const newPage = controller.querySelector(`.page-content > div[page=${newTarget}]`);
+                        const oldPage = controller.querySelector(`.page-content > div[page=${oldTarget}]`);
+
+                        const oldPageScrollLeft = oldPage.scrollLeft;
+
+                        newPage.setAttribute("selected", "true");
+                        oldPage.setAttribute("selected", "false");
+
+                        newPage.querySelectorAll("video").forEach(video => {
+                            video.currentTime = 0;
+                            video.play();
+                        });
+
+                        oldPage.querySelectorAll("video").forEach(video => {
+                            video.pause();
+                        });
+
+                        newPage.scrollLeft = oldPageScrollLeft;
+                    }
+                })
+            })
+        })
+
+        // Speed up video on hold
+        document.querySelectorAll(".video-player").forEach(player => {
+            const video = player.querySelector("video");
+            if (!video) return;
+
+            const speedUpIndicator = document.createElement("div");
+            speedUpIndicator.className = "speed-up-indicator";
+            player.appendChild(speedUpIndicator);
+
+            const startSpeedUp = (e) => {
+                e.preventDefault();
+                video.playbackRate = 2.5;
+                player.classList.add("speed-up-active");
+            };
+
+            const endSpeedUp = () => {
+                video.playbackRate = 1.0;
+                player.classList.remove("speed-up-active");
+            };
+
+            player.addEventListener("mousedown", startSpeedUp);
+            player.addEventListener("touchstart", startSpeedUp, { passive: true });
+
+            player.addEventListener("mouseup", endSpeedUp);
+            player.addEventListener("mouseleave", endSpeedUp);
+            player.addEventListener("touchend", endSpeedUp);
+            player.addEventListener("touchcancel", endSpeedUp);
+        });
+
+        // Simple toggle function
+        function toggleCaption(button) {
+            console.log('toggleCaption called');
+            const content = button.parentElement.querySelector('.caption-content');
+            if (content) {
+                if (content.classList.contains('expanded')) {
+                    content.classList.remove('expanded');
+                    button.textContent = 'Show Prompts';
+                    button.classList.remove('expanded');
+                    console.log('Hiding content');
+                } else {
+                    content.classList.add('expanded');
+                    button.textContent = 'Hide Prompts';
+                    button.classList.add('expanded');
+                    console.log('Showing content');
+                }
+            } else {
+                console.log('No content found');
+            }
+        }
+
+        // Caption toggle functionality - only for Ultra-Long section
+        function initializeCaptionToggles() {
+            console.log('Initializing caption toggles...');
+            
+            // Wait a bit to ensure DOM is fully loaded
+            setTimeout(function() {
+                // Find the section that contains "Ultra-Long Creative Generation"
+                const allSections = document.querySelectorAll('section');
+                let ultraLongSection = null;
+                
+                allSections.forEach(section => {
+                    const h1 = section.querySelector('h1');
+                    if (h1 && h1.textContent.includes('Ultra-Long Creative Generation')) {
+                        ultraLongSection = section;
+                    }
+                });
+                
+                console.log('Ultra-Long section found:', ultraLongSection);
+                
+                if (!ultraLongSection) {
+                    console.log('Ultra-Long section not found!');
+                    return;
+                }
+                
+                const toggleButtons = ultraLongSection.querySelectorAll('.caption-toggle');
+                console.log('Toggle buttons found:', toggleButtons.length);
+                
+                toggleButtons.forEach((toggleButton, index) => {
+                    console.log('Processing toggle button:', index, toggleButton);
+                    const videoCaption = toggleButton.parentElement;
+                    const contentWrapper = videoCaption.querySelector('.caption-content');
+                    
+                    console.log('Content wrapper found:', contentWrapper);
+                    
+                    if (!contentWrapper) {
+                        console.log('No content wrapper found for button', index);
+                        return;
+                    }
+                    
+                    // Remove any existing event listeners
+                    const newToggleButton = toggleButton.cloneNode(true);
+                    toggleButton.parentNode.replaceChild(newToggleButton, toggleButton);
+                    
+                    // Add click event
+                    newToggleButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Toggle button clicked for index:', index);
+                        const isExpanded = contentWrapper.classList.contains('expanded');
+                        console.log('Current state - expanded:', isExpanded);
+                        
+                        if (isExpanded) {
+                            contentWrapper.classList.remove('expanded');
+                            newToggleButton.classList.remove('expanded');
+                            newToggleButton.textContent = 'Show Prompts';
+                            console.log('Collapsed content');
+                        } else {
+                            contentWrapper.classList.add('expanded');
+                            newToggleButton.classList.add('expanded');
+                            newToggleButton.textContent = 'Hide Prompts';
+                            console.log('Expanded content');
+                        }
+                    });
+                    
+                    console.log('Event listener added to button', index);
+                });
+            }, 500);
+        }
+
+        // Initialize caption toggles when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeCaptionToggles);
+        
+        // Also try after page load
+        window.addEventListener('load', initializeCaptionToggles);
+        
+        // And try immediately if DOM is already ready
+        if (document.readyState === 'complete') {
+            initializeCaptionToggles();
+        }
+        
+        // Backup method - directly find and bind all caption toggles
+        function backupInitialize() {
+            console.log('Backup initialization...');
+            const allToggles = document.querySelectorAll('.caption-toggle');
+            console.log('Found caption toggles:', allToggles.length);
+            
+            allToggles.forEach((toggle, index) => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Backup: Toggle clicked', index);
+                    const content = toggle.parentElement.querySelector('.caption-content');
+                    if (content) {
+                        if (content.style.display === 'block') {
+                            content.style.display = 'none';
+                            toggle.textContent = 'Show Prompts';
+                        } else {
+                            content.style.display = 'block';
+                            toggle.textContent = 'Hide Prompts';
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Run backup after a delay
+        setTimeout(backupInitialize, 2000);
+    </script>
+    <script defer
+        src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
+        integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
+        data-cf-beacon='{"rayId":"944e28ba3a2961e3","version":"2025.4.0-1-g37f21b1","r":1,"token":"8591086b57754c278d4db02301f960eb","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}'
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
