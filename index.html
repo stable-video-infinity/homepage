@@ -1738,7 +1738,8 @@
     <section style="background: rgba(40, 40, 45, 0.8); padding: 24px calc(50vw - min(45vw, 1600px / 2)); border: none; border-top: 1px solid rgba(255, 235, 59, 0.3);">
         <div style="background: rgba(255, 255, 255, 0.05); padding: 16px 20px; border-radius: 8px; border: 1px solid rgba(255, 235, 59, 0.2); text-align: center;">
             <p style="color: #ffeb3b; font-weight: 500; margin: 0 0 8px 0; font-size: 16px;">⚠️ Note</p>
-            <p style="color: #fff; margin: 0; font-size: 14px; line-height: 1.5;">All videos displayed on this website have been compressed for web delivery, which may result in reduced visual quality compared to the original generated content. The compression is necessary to ensure optimal loading times and bandwidth efficiency. All the videos have been sped-up from 16 FPS to 24 FPS for better visual experience.</p>
+            <p style="color: #fff; margin: 0 0 8px 0; font-size: 14px; line-height: 1.5;">All videos displayed on this website have been compressed for web delivery, which may result in reduced visual quality compared to the original generated content. The compression is necessary to ensure optimal loading times and bandwidth efficiency. All the videos have been sped-up from 16 FPS to 24 FPS for better visual experience.</p>
+            <p style="color: #4fc3f7; margin: 0; font-size: 14px; line-height: 1.5;">💡 For the best viewing experience, we recommend clicking the BGM button to enjoy the videos with background music.</p>
         </div>
     </section>
 
@@ -2885,6 +2886,7 @@ Curiosity encourages the baby to stretch out his hands to explore every corner o
         // Global shared audio for all non-talk videos
         let sharedBGMAudio = null;
         let tomAudio = null;
+        let ironmanAudio = null;
         let currentPlayingAudio = null;
 
         // Function to get or create shared BGM audio
@@ -2919,6 +2921,22 @@ Curiosity encourages the baby to stretch out his hands to explore every corner o
             return tomAudio;
         }
 
+        // Function to get or create Ironman-specific audio
+        function getIronmanAudio() {
+            if (!ironmanAudio) {
+                ironmanAudio = new Audio('audio/ironman.mp3');
+                ironmanAudio.loop = true;
+                ironmanAudio.volume = 0.5;
+                ironmanAudio.preload = 'metadata';
+
+                // Error handling
+                ironmanAudio.onerror = function () {
+                    console.warn('Failed to load Ironman audio file: audio/ironman.mp3');
+                };
+            }
+            return ironmanAudio;
+        }
+
         // Function to determine if a video should use original audio (for talk sections)
         function shouldUseOriginalAudio(videoSrc) {
             return videoSrc.includes('/talking/');
@@ -2929,16 +2947,25 @@ Curiosity encourages the baby to stretch out his hands to explore every corner o
             return videoSrc.includes('tom.mp4');
         }
 
+        // Function to determine if a video is from comic folder (Ironman videos)
+        function isIronmanVideo(videoSrc) {
+            return videoSrc.includes('ironman') || videoSrc.includes('dragonball');
+        }
+
         document.querySelectorAll(".audio-control").forEach(wrapper => {
             const video = wrapper.querySelector("video");
             const useOriginalAudio = shouldUseOriginalAudio(video.src);
             const isTom = isTomVideo(video.src);
+            const isIronman = isIronmanVideo(video.src);
 
             // Assign appropriate audio for non-talk videos
             if (!useOriginalAudio) {
                 if (isTom) {
                     wrapper.externalAudio = getTomAudio();
                     wrapper.setAttribute('data-audio-type', 'tom');
+                } else if (isIronman) {
+                    wrapper.externalAudio = getIronmanAudio();
+                    wrapper.setAttribute('data-audio-type', 'ironman');
                 } else {
                     wrapper.externalAudio = getSharedBGMAudio();
                     wrapper.setAttribute('data-audio-type', 'external');
