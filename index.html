@@ -106,6 +106,53 @@
             height: 40px;
         }
 
+        /* Global BGM Control Button */
+        .global-bgm-control {
+            position: fixed;
+            top: 100px;
+            right: calc(50vw - min(45vw, 1600px / 2));
+            z-index: 1000;
+            background: rgba(60, 140, 255, 0.9);
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .global-bgm-control:hover {
+            background: rgba(60, 140, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .global-bgm-control.playing {
+            background: rgba(76, 175, 80, 0.9);
+        }
+
+        .global-bgm-control.playing:hover {
+            background: rgba(76, 175, 80, 1);
+        }
+
+        .global-bgm-control::before {
+            content: '🎵';
+            font-size: 18px;
+        }
+
+        @media (max-width: 640px) {
+            .global-bgm-control {
+                right: 16px;
+                top: 80px;
+                padding: 10px 14px;
+                font-size: 12px;
+            }
+        }
 
         section {
             border-top: 1px solid #333;
@@ -1672,6 +1719,14 @@
 </head>
 
 <body>
+    <!-- Global BGM Control Buttons -->
+    <div class="global-bgm-control" id="ironman-bgm-btn" data-audio="ironman">
+        Play Ironman BGM
+    </div>
+    <div class="global-bgm-control" id="summer-bgm-btn" data-audio="summer" style="top: 160px;">
+        Play Summer BGM
+    </div>
+
     <section id="intro">
 
         <div class="background-video">
@@ -1739,7 +1794,7 @@
         <div style="background: rgba(255, 255, 255, 0.05); padding: 16px 20px; border-radius: 8px; border: 1px solid rgba(255, 235, 59, 0.2); text-align: center;">
             <p style="color: #ffeb3b; font-weight: 500; margin: 0 0 8px 0; font-size: 16px;">⚠️ Note</p>
             <p style="color: #fff; margin: 0 0 8px 0; font-size: 14px; line-height: 1.5;">All videos displayed on this website have been compressed for web delivery, which may result in reduced visual quality compared to the original generated content. The compression is necessary to ensure optimal loading times and bandwidth efficiency. All the videos have been sped-up from 16 FPS to 24 FPS for better visual experience.</p>
-            <p style="color: #4fc3f7; margin: 0; font-size: 14px; line-height: 1.5;">💡 For the best viewing experience, we recommend clicking the BGM button to enjoy the videos with background music.</p>
+            <p style="color: #4fc3f7; margin: 0; font-size: 14px; line-height: 1.5;">🎵 Click the BGM buttons on the right side to enjoy background music!.</p>
         </div>
     </section>
 
@@ -2883,13 +2938,13 @@ Curiosity encourages the baby to stretch out his hands to explore every corner o
         const body = document.querySelector("body");
         let globalmuted = true;
         const isNarrow = () => window.innerWidth < 512;
-        // Global shared audio for all non-talk videos
+        // Global BGM audio objects
         let sharedBGMAudio = null;
         let tomAudio = null;
         let ironmanAudio = null;
         let currentPlayingAudio = null;
 
-        // Function to get or create shared BGM audio
+        // Function to get or create shared BGM audio (summer)
         function getSharedBGMAudio() {
             if (!sharedBGMAudio) {
                 sharedBGMAudio = new Audio('audio/summer.mp3');
@@ -2937,6 +2992,65 @@ Curiosity encourages the baby to stretch out his hands to explore every corner o
             return ironmanAudio;
         }
 
+        // Global BGM Control Buttons
+        const ironmanBGMBtn = document.getElementById('ironman-bgm-btn');
+        const summerBGMBtn = document.getElementById('summer-bgm-btn');
+
+        function stopAllBGM() {
+            if (ironmanAudio && !ironmanAudio.paused) {
+                ironmanAudio.pause();
+                ironmanBGMBtn.classList.remove('playing');
+                ironmanBGMBtn.textContent = 'Play Ironman BGM';
+            }
+            if (sharedBGMAudio && !sharedBGMAudio.paused) {
+                sharedBGMAudio.pause();
+                summerBGMBtn.classList.remove('playing');
+                summerBGMBtn.textContent = 'Play Summer BGM';
+            }
+            if (tomAudio && !tomAudio.paused) {
+                tomAudio.pause();
+            }
+            currentPlayingAudio = null;
+        }
+
+        ironmanBGMBtn.addEventListener('click', function() {
+            const audio = getIronmanAudio();
+            if (audio.paused) {
+                stopAllBGM();
+                audio.play().then(() => {
+                    ironmanBGMBtn.classList.add('playing');
+                    ironmanBGMBtn.textContent = 'Stop Ironman BGM';
+                    currentPlayingAudio = audio;
+                    globalmuted = false;
+                    body.setAttribute("muted", false);
+                }).catch(e => console.log('Ironman audio play failed:', e));
+            } else {
+                audio.pause();
+                ironmanBGMBtn.classList.remove('playing');
+                ironmanBGMBtn.textContent = 'Play Ironman BGM';
+                currentPlayingAudio = null;
+            }
+        });
+
+        summerBGMBtn.addEventListener('click', function() {
+            const audio = getSharedBGMAudio();
+            if (audio.paused) {
+                stopAllBGM();
+                audio.play().then(() => {
+                    summerBGMBtn.classList.add('playing');
+                    summerBGMBtn.textContent = 'Stop Summer BGM';
+                    currentPlayingAudio = audio;
+                    globalmuted = false;
+                    body.setAttribute("muted", false);
+                }).catch(e => console.log('Summer audio play failed:', e));
+            } else {
+                audio.pause();
+                summerBGMBtn.classList.remove('playing');
+                summerBGMBtn.textContent = 'Play Summer BGM';
+                currentPlayingAudio = null;
+            }
+        });
+
         // Function to determine if a video should use original audio (for talk sections)
         function shouldUseOriginalAudio(videoSrc) {
             return videoSrc.includes('/talking/');
@@ -2958,141 +3072,40 @@ Curiosity encourages the baby to stretch out his hands to explore every corner o
             const isTom = isTomVideo(video.src);
             const isIronman = isIronmanVideo(video.src);
 
-            // Assign appropriate audio for non-talk videos
-            if (!useOriginalAudio) {
-                if (isTom) {
-                    wrapper.externalAudio = getTomAudio();
-                    wrapper.setAttribute('data-audio-type', 'tom');
-                } else if (isIronman) {
-                    wrapper.externalAudio = getIronmanAudio();
-                    wrapper.setAttribute('data-audio-type', 'ironman');
-                } else {
-                    wrapper.externalAudio = getSharedBGMAudio();
-                    wrapper.setAttribute('data-audio-type', 'external');
-                }
+            // External audio disabled - use global BGM buttons instead
+            // Only keep original audio for talk videos
+            if (useOriginalAudio) {
+                wrapper.setAttribute('data-audio-type', 'original');
+            } else {
+                wrapper.setAttribute('data-audio-type', 'disabled');
             }
 
             // Set data attributes for styling
             wrapper.setAttribute('data-has-audio', 'true');
-            if (useOriginalAudio) {
-                wrapper.setAttribute('data-audio-type', 'original');
-            }
-            // Note: external and tom types are already set above
 
             const button = document.createElement("div");
 
             button.className = "audio-button";
             button.onclick = function () {
-                globalmuted = !globalmuted;
-                body.setAttribute("muted", globalmuted);
-
-                // Handle audio playbook
+                // Only work for videos with original audio (talk videos)
                 if (useOriginalAudio) {
-                    // For talk videos, control original video audio
+                    globalmuted = !globalmuted;
+                    body.setAttribute("muted", globalmuted);
                     video.muted = globalmuted;
-                } else if (wrapper.externalAudio) {
-                    // For other videos, control external audio (shared BGM or Tom's audio)
-                    if (!globalmuted) {
-                        // Stop any other audio that might be playing
-                        if (currentPlayingAudio && currentPlayingAudio !== wrapper.externalAudio) {
-                            currentPlayingAudio.pause();
-                            // Update other audio controls
-                            document.querySelectorAll('.audio-control').forEach(el => {
-                                if (el.externalAudio === currentPlayingAudio) {
-                                    el.setAttribute('data-audio-playing', 'false');
-                                }
-                            });
-                        }
-
-                        wrapper.externalAudio.play().then(() => {
-                            if (isTom) {
-                                // Update Tom video controls
-                                document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
-                                    el.setAttribute('data-audio-playing', 'true');
-                                });
-                            } else {
-                                // Update shared BGM controls
-                                document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
-                                    el.setAttribute('data-audio-playing', 'true');
-                                });
-                            }
-                            currentPlayingAudio = wrapper.externalAudio;
-                        }).catch(e => console.log('Audio play failed:', e));
-                    } else {
-                        wrapper.externalAudio.pause();
-                        if (isTom) {
-                            // Update Tom video controls
-                            document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
-                                el.setAttribute('data-audio-playing', 'false');
-                            });
-                        } else {
-                            // Update shared BGM controls
-                            document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
-                                el.setAttribute('data-audio-playing', 'false');
-                            });
-                        }
-                        if (currentPlayingAudio === wrapper.externalAudio) {
-                            currentPlayingAudio = null;
-                        }
-                    }
                 }
+                // For other videos, button is disabled (does nothing)
             }
 
+            // Remove mouse hover audio control for non-original audio videos
             wrapper.addEventListener("mouseenter", () => {
-                if (!isNarrow()) {
-                    if (useOriginalAudio) {
-                        video.muted = globalmuted;
-                    } else if (wrapper.externalAudio && !globalmuted) {
-                        // Stop any other audio that might be playing
-                        if (currentPlayingAudio && currentPlayingAudio !== wrapper.externalAudio) {
-                            currentPlayingAudio.pause();
-                            // Update other audio controls
-                            document.querySelectorAll('.audio-control').forEach(el => {
-                                if (el.externalAudio === currentPlayingAudio) {
-                                    el.setAttribute('data-audio-playing', 'false');
-                                }
-                            });
-                        }
-
-                        wrapper.externalAudio.play().then(() => {
-                            if (isTom) {
-                                // Update Tom video controls
-                                document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
-                                    el.setAttribute('data-audio-playing', 'true');
-                                });
-                            } else {
-                                // Update shared BGM controls
-                                document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
-                                    el.setAttribute('data-audio-playing', 'true');
-                                });
-                            }
-                            currentPlayingAudio = wrapper.externalAudio;
-                        }).catch(e => console.log('Audio play failed:', e));
-                    }
+                if (!isNarrow() && useOriginalAudio) {
+                    video.muted = globalmuted;
                 }
             });
 
             wrapper.addEventListener("mouseleave", () => {
-                if (!isNarrow()) {
-                    if (useOriginalAudio) {
-                        video.muted = true;
-                    } else if (wrapper.externalAudio) {
-                        wrapper.externalAudio.pause();
-                        if (isTom) {
-                            // Update Tom video controls
-                            document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
-                                el.setAttribute('data-audio-playing', 'false');
-                            });
-                        } else {
-                            // Update shared BGM controls
-                            document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
-                                el.setAttribute('data-audio-playing', 'false');
-                            });
-                        }
-                        if (currentPlayingAudio === wrapper.externalAudio) {
-                            currentPlayingAudio = null;
-                        }
-                    }
+                if (!isNarrow() && useOriginalAudio) {
+                    video.muted = true;
                 }
             });
 
@@ -3173,66 +3186,19 @@ Curiosity encourages the baby to stretch out his hands to explore every corner o
             wrapper.appendChild(speedButton);
         });
 
-        // Global mobile audio control
+        // Global mobile audio control - only for original audio videos
         document.querySelectorAll(".audio-button-mobile").forEach(button => {
             button.onclick = () => {
                 globalmuted = !globalmuted;
                 body.setAttribute("muted", globalmuted);
 
-                // Handle all audio elements
+                // Handle only videos with original audio
                 document.querySelectorAll(".audio-control").forEach(wrapper => {
                     const video = wrapper.querySelector('video');
                     const useOriginalAudio = shouldUseOriginalAudio(video.src);
-                    const isTom = isTomVideo(video.src);
 
-                    if (video.isIntersecting) {
-                        if (useOriginalAudio) {
-                            video.muted = globalmuted;
-                        } else if (wrapper.externalAudio) {
-                            if (!globalmuted) {
-                                // Stop any other audio that might be playing
-                                if (currentPlayingAudio && currentPlayingAudio !== wrapper.externalAudio) {
-                                    currentPlayingAudio.pause();
-                                    // Update other audio controls
-                                    document.querySelectorAll('.audio-control').forEach(el => {
-                                        if (el.externalAudio === currentPlayingAudio) {
-                                            el.setAttribute('data-audio-playing', 'false');
-                                        }
-                                    });
-                                }
-
-                                wrapper.externalAudio.play().then(() => {
-                                    if (isTom) {
-                                        // Update Tom video controls
-                                        document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
-                                            el.setAttribute('data-audio-playing', 'true');
-                                        });
-                                    } else {
-                                        // Update shared BGM controls
-                                        document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
-                                            el.setAttribute('data-audio-playing', 'true');
-                                        });
-                                    }
-                                    currentPlayingAudio = wrapper.externalAudio;
-                                }).catch(e => console.log('Audio play failed:', e));
-                            } else {
-                                wrapper.externalAudio.pause();
-                                if (isTom) {
-                                    // Update Tom video controls
-                                    document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
-                                        el.setAttribute('data-audio-playing', 'false');
-                                    });
-                                } else {
-                                    // Update shared BGM controls
-                                    document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
-                                        el.setAttribute('data-audio-playing', 'false');
-                                    });
-                                }
-                                if (currentPlayingAudio === wrapper.externalAudio) {
-                                    currentPlayingAudio = null;
-                                }
-                            }
-                        }
+                    if (video.isIntersecting && useOriginalAudio) {
+                        video.muted = globalmuted;
                     }
                 });
             }
@@ -3243,63 +3209,16 @@ Curiosity encourages the baby to stretch out his hands to explore every corner o
                 const video = entry.target;
                 const wrapper = video.closest('.audio-control');
                 const useOriginalAudio = shouldUseOriginalAudio(video.src);
-                const isTom = isTomVideo(video.src);
 
                 if (entry.isIntersecting) {
-                    // Play audio if not muted and on mobile
-                    if (!globalmuted && isNarrow()) {
-                        if (useOriginalAudio) {
-                            video.muted = false;
-                        } else if (wrapper.externalAudio) {
-                            // Stop any other audio that might be playing
-                            if (currentPlayingAudio && currentPlayingAudio !== wrapper.externalAudio) {
-                                currentPlayingAudio.pause();
-                                // Update other audio controls
-                                document.querySelectorAll('.audio-control').forEach(el => {
-                                    if (el.externalAudio === currentPlayingAudio) {
-                                        el.setAttribute('data-audio-playing', 'false');
-                                    }
-                                });
-                            }
-
-                            wrapper.externalAudio.play().then(() => {
-                                if (isTom) {
-                                    // Update Tom video controls
-                                    document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
-                                        el.setAttribute('data-audio-playing', 'true');
-                                    });
-                                } else {
-                                    // Update shared BGM controls
-                                    document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
-                                        el.setAttribute('data-audio-playing', 'true');
-                                    });
-                                }
-                                currentPlayingAudio = wrapper.externalAudio;
-                            }).catch(e => console.log('Audio play failed:', e));
-                        }
+                    // Play audio if not muted and on mobile - only for original audio
+                    if (!globalmuted && isNarrow() && useOriginalAudio) {
+                        video.muted = false;
                     }
                 } else {
                     // Pause audio when video is out of view (only on mobile)
-                    if (isNarrow()) {
-                        if (useOriginalAudio) {
-                            video.muted = true;
-                        } else if (wrapper.externalAudio) {
-                            wrapper.externalAudio.pause();
-                            if (isTom) {
-                                // Update Tom video controls
-                                document.querySelectorAll('.audio-control[data-audio-type="tom"]').forEach(el => {
-                                    el.setAttribute('data-audio-playing', 'false');
-                                });
-                            } else {
-                                // Update shared BGM controls
-                                document.querySelectorAll('.audio-control[data-audio-type="external"]').forEach(el => {
-                                    el.setAttribute('data-audio-playing', 'false');
-                                });
-                            }
-                            if (currentPlayingAudio === wrapper.externalAudio) {
-                                currentPlayingAudio = null;
-                            }
-                        }
+                    if (isNarrow() && useOriginalAudio) {
+                        video.muted = true;
                     }
                 }
 
@@ -3325,17 +3244,25 @@ Curiosity encourages the baby to stretch out his hands to explore every corner o
         // Pause all audio when page becomes hidden
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
+                // Only handle original audio videos
                 document.querySelectorAll('.audio-control').forEach(wrapper => {
                     const video = wrapper.querySelector('video');
                     const useOriginalAudio = shouldUseOriginalAudio(video.src);
 
                     if (useOriginalAudio) {
                         video.muted = true;
-                    } else if (wrapper.externalAudio) {
-                        wrapper.externalAudio.pause();
-                        wrapper.setAttribute('data-audio-playing', 'false');
                     }
                 });
+                // Pause global BGM if playing
+                if (sharedBGMAudio && !sharedBGMAudio.paused) {
+                    sharedBGMAudio.pause();
+                }
+                if (ironmanAudio && !ironmanAudio.paused) {
+                    ironmanAudio.pause();
+                }
+                if (tomAudio && !tomAudio.paused) {
+                    tomAudio.pause();
+                }
                 currentPlayingAudio = null;
             }
         });
