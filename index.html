@@ -163,6 +163,37 @@
             margin-bottom: 50px;
         }
 
+        /* ICLR 2026 Badge */
+        .iclr-badge {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: inline-block;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, rgba(255, 235, 59, 0.15) 0%, rgba(79, 195, 247, 0.15) 100%);
+            border: 1.5px solid rgba(255, 235, 59, 0.4);
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            color: #ffeb3b;
+            text-shadow: 0 0 15px rgba(255, 235, 59, 0.4);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2),
+                        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .iclr-badge:hover {
+            transform: translateX(-50%) translateY(-2px);
+            border-color: rgba(255, 235, 59, 0.6);
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3),
+                        0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+                        0 0 30px rgba(255, 235, 59, 0.3);
+        }
+
         #intro {
             text-align: center;
             height: 100vh;
@@ -171,6 +202,19 @@
             justify-content: center;
             align-items: center;
             border: none;
+            position: relative;
+        }
+
+        #intro::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 235, 59, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 1;
         }
 
         #intro .content {
@@ -182,6 +226,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 2;
         }
 
         #intro .background-video {
@@ -189,6 +234,7 @@
             height: calc(100vh * (1 - var(--intro-scale)) + 90vh * var(--intro-scale));
             border-radius: calc(0px * (1 - var(--intro-scale)) + 16px * var(--intro-scale));
             overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
 
         #intro video {
@@ -197,7 +243,7 @@
             margin-left: -10px;
             margin-top: -10px;
             object-fit: cover;
-            filter: brightness(50%) blur(10px);
+            filter: brightness(45%) blur(12px) saturate(1.1);
         }
 
         #intro h1 {
@@ -207,12 +253,62 @@
             font-optical-sizing: auto;
             font-weight: 600;
             font-style: normal;
+            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0.95) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            letter-spacing: -0.5px;
         }
 
         #intro h2 {
             margin: 20px 0 40px 0;
             font-size: 20px;
             font-weight: 200;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.6;
+        }
+
+        #intro h2 a {
+            color: rgba(255, 255, 255, 0.95);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid transparent;
+        }
+
+        #intro h2 a:hover {
+            color: #ffeb3b;
+            border-bottom-color: rgba(255, 235, 59, 0.5);
+            text-shadow: 0 0 8px rgba(255, 235, 59, 0.3);
+        }
+
+        #intro .publication-authors {
+            margin-top: 12px;
+        }
+
+        #intro .publication-authors a {
+            color: rgba(79, 195, 247, 0.9);
+            font-weight: 400;
+        }
+
+        #intro .publication-authors a:hover {
+            color: #4fc3f7;
+            text-shadow: 0 0 8px rgba(79, 195, 247, 0.4);
+        }
+
+        #intro p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 16px;
+            margin: 0;
+        }
+
+        #intro .text img {
+            filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.25));
+            transition: filter 0.3s ease;
+        }
+
+        #intro .text img:hover {
+            filter: drop-shadow(0 0 40px rgba(255, 235, 59, 0.4));
         }
 
         #intro h3 {
@@ -436,12 +532,87 @@
         }
 
         #long {
-            background: linear-gradient(75deg, #524037, #282025);
+            background: linear-gradient(135deg, #524037 0%, #3d2f28 50%, #282025 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #long::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255, 235, 59, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 50%, rgba(79, 195, 247, 0.05) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         #long .text {
-            width: 30%;
+            width: 100%;
             flex-shrink: 0;
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        #long .text h1 {
+            font-size: 42px;
+            font-weight: 600;
+            margin: 0 0 16px 0;
+            background: linear-gradient(135deg, #ffeb3b 0%, #fff 50%, #4fc3f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 235, 59, 0.3);
+            letter-spacing: -0.5px;
+        }
+
+        #long .grid {
+            grid-gap: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        #long .video-player {
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+                        0 0 0 1px rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+        }
+
+        #long .video-player:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6),
+                        0 0 0 1px rgba(255, 235, 59, 0.3),
+                        0 0 40px rgba(255, 235, 59, 0.2);
+            z-index: 10;
+        }
+
+        #long .video-player video {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #long .video-player:hover video {
+            transform: scale(1.05);
+        }
+
+        #long .video-player.span22 {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        #long .audio-button {
+            transition: opacity 0.3s ease;
+        }
+
+        #long .video-player:hover .audio-button {
+            opacity: 1;
         }
 
         #shots {
@@ -1172,11 +1343,14 @@
             color: #fff;
             background-color: rgba(128, 128, 128, 0.3);
             cursor: pointer;
-            transition: background-color 0.5s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             overflow: hidden;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .paper-button .icon {
@@ -1184,16 +1358,24 @@
             padding: 8px;
             background-color: rgba(255, 255, 255, 0.7);
             margin-right: 16px;
-            transition: background-color 0.5s;
+            transition: all 0.3s ease;
+            border-radius: 6px;
         }
 
         .paper-button:hover {
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.95);
             color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25),
+                        0 0 0 1px rgba(255, 235, 59, 0.2);
         }
 
         .paper-button:hover .icon {
-            background-color: #fff;
+            background-color: rgba(60, 140, 255, 0.1);
+        }
+
+        #intro .paper-button {
+            margin: 0 8px 8px 0;
         }
 
         .speed-up-indicator {
@@ -1218,6 +1400,13 @@
         }
 
         @media (max-width: 640px) {
+            .iclr-badge {
+                top: 20px;
+                padding: 8px 18px;
+                font-size: 14px;
+                letter-spacing: 1px;
+            }
+
             #intro h1 {
                 font-size: clamp(32px, 8vw, 64px);
                 margin: 50px 0 20px 0;
@@ -1233,6 +1422,12 @@
             #intro .background-video {
                 width: calc(100vw * (1 - var(--intro-scale)) + (100vw - 32px) * var(--intro-scale));
                 height: calc(100vh * (1 - var(--intro-scale)) + 85vh * var(--intro-scale));
+            }
+
+            #intro .paper-button {
+                margin: 0 4px 8px 0;
+                padding: 10px 14px;
+                font-size: 14px;
             }
 
             h1 {
@@ -1280,6 +1475,30 @@
             #super-resolution .text {
                 width: 100%;
                 max-width: 100%;
+            }
+
+            #long .text h1 {
+                font-size: clamp(28px, 6vw, 36px);
+                margin-bottom: 12px;
+            }
+
+            #long .grid {
+                grid-gap: 12px;
+            }
+
+            #long .video-player {
+                border-radius: 16px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            }
+
+            #long .video-player:hover {
+                transform: translateY(-4px) scale(1.01);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            }
+
+            #long .video-player.span22 {
+                grid-column: span 1;
+                grid-row: span 1;
             }
 
             #shots {
@@ -1630,6 +1849,13 @@
                 font-size: 8px;
             }
 
+            .iclr-badge {
+                top: 16px;
+                padding: 6px 16px;
+                font-size: 13px;
+                letter-spacing: 1px;
+            }
+
             #intro h1 {
                 font-size: clamp(28px, 7vw, 48px);
                 margin: 40px 0 16px 0;
@@ -1693,6 +1919,13 @@
                 padding: 40px 0;
             }
 
+            .iclr-badge {
+                top: 12px;
+                padding: 6px 14px;
+                font-size: 12px;
+                letter-spacing: 0.5px;
+            }
+
             #intro h1 {
                 font-size: clamp(24px, 4vw, 36px);
                 margin: 20px 0 16px 0;
@@ -1728,7 +1961,7 @@
     </div>
 
     <section id="intro">
-
+        <div class="iclr-badge">ICLR 2026</div>
         <div class="background-video">
             <video muted loop playsinline preload="none" src="videos/ultra-long/svi/water.mp4"></video>
         </div>
@@ -1816,7 +2049,37 @@
     </section>
 
 
-    <section id="avatar">
+    <section id="long">
+        <div class="text">
+            <h1>
+                Use Cases from the Community
+            </h1>
+        </div>
+        <div class="grid">
+            <div class="video-player audio-control">
+                <video loop="" playsinline="" preload="none" muted="" src="videos/user-demo/happy.mp4"></video>
+            <div class="audio-button"></div></div>
+            <div class="video-player audio-control  span22">
+                <video loop="" playsinline="" preload="none" muted="" src="videos/user-demo/demo3.mp4"></video>
+            <div class="audio-button"></div></div>
+            <div class="video-player audio-control">
+                <video loop="" playsinline="" preload="none" muted="" src="videos/user-demo/demo4.mp4"></video>
+            <div class="audio-button"></div></div>
+            <div class="video-player audio-control span22">
+                <video loop="" playsinline="" preload="none" muted="" src="videos/user-demo/demo6.mp4"></video>
+            <div class="audio-button"></div></div>
+            <div class="video-player audio-control">
+                <video loop="" playsinline="" preload="none" muted="" src="videos/user-demo/teaser.mp4"></video>
+            <div class="audio-button"></div></div>
+            <div class="video-player audio-control">
+                <video loop="" playsinline="" preload="none" muted="" src="videos/user-demo/demo7.mp4"></video>
+            <div class="audio-button"></div></div>
+            
+        </div>
+        <div class="audio-button audio-button-mobile"></div>
+    </section>
+
+    <!-- <section id="avatar">
         <div class="text">
             <h1>
                 Stable Video Infinity
@@ -1897,7 +2160,7 @@
                     <div class="caption-content">Goku, filled with rage, charges forward through the air, his muscles bulging as he flies directly at the villains, the wind whipping his orange gi, energy crackling around him in a fiery aura. As Goku closes in, the villains smirk confidently, one firing a massive energy blast towards him, but Goku dodges it mid-flight, his eyes locked on the target with unyielding determination. Goku counters by gathering ki in his palms, forming a small energy sphere that grows brighter, the villains preparing their defenses as the battlefield shakes from the impending clash. Launching the energy blast, Goku sends it hurtling towards the lead villain, who blocks it with a force field, sparks flying as the two powers collide in a brilliant explosion of light. The explosion clears, revealing Goku unscathed, powering up further with a guttural yell, his hair standing on end as golden sparks begin to flicker around his body. The villains charge at Goku in unison, one swinging a massive punch, but Goku flips backward gracefully, landing on a rocky outcrop and smirking defiantly. Goku retaliates with a series of rapid punches, his fists blurring as he strikes the first villain, sending him crashing into a nearby mountain with a thunderous impact. Turning to the second villain, Goku unleashes a powerful kick, the force creating shockwaves that ripple through the air, knocking the enemy off balance. The third villain attempts a sneak attack from behind, firing dark energy beams, but Goku senses it and spins around, deflecting them with his bare hands. Building momentum, Goku channels more energy, his aura expanding into a blazing golden hue as he begins his transformation into Super Saiyan. With a mighty roar, Goku's hair turns golden and stands upright, his eyes turning teal, the ground trembling as his power level skyrockets dramatically. Now in Super Saiyan form, Goku dashes forward at supersonic speed, grabbing one villain by the collar and hurling him into the sky with effortless strength. The hurled villain recovers mid-air and dives back down, clashing fists with Goku in a high-speed aerial battle, punches echoing like thunder. Goku gains the upper hand, delivering an uppercut that sends the villain spiraling downward, crashing into the earth and creating a massive crater. The remaining villains regroup, combining their powers to form a gigantic energy wave aimed at Goku, the beam glowing with ominous purple light. Goku stands firm, cupping his hands to his side and chanting "Ka... me... ha... me...", blue energy gathering between his palms. As the villains' beam launches, Goku releases his Kamehameha Wave, the two massive energies colliding in a spectacular beam struggle that lights up the sky. Pushing harder, Goku's beam overpowers the villains', surging forward and engulfing them in a blinding explosion that shakes the entire landscape.</div>
                 </div>
         <div class="audio-button audio-button-mobile"></div>
-    </section>
+    </section> -->
 
 
 
