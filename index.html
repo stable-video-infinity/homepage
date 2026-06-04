@@ -1360,6 +1360,9 @@
             margin-right: 16px;
             transition: all 0.3s ease;
             border-radius: 6px;
+            color: #111;
+            min-width: 18px;
+            text-align: center;
         }
 
         .paper-button:hover {
@@ -1375,7 +1378,25 @@
         }
 
         #intro .paper-button {
-            margin: 0 8px 8px 0;
+            margin: 0;
+        }
+
+        #intro .resource-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .paper-button.huggingface-button:hover .icon {
+            background-color: rgba(255, 214, 102, 0.36);
+            color: #8a5a00;
+        }
+
+        .paper-button.modelscope-button:hover .icon {
+            background-color: rgba(98, 74, 255, 0.16);
+            color: #624aff;
         }
 
         .speed-up-indicator {
@@ -1425,9 +1446,17 @@
             }
 
             #intro .paper-button {
-                margin: 0 4px 8px 0;
                 padding: 10px 14px;
                 font-size: 14px;
+            }
+
+            #intro .resource-buttons {
+                gap: 8px;
+                padding: 0 8px;
+            }
+
+            #intro .paper-button .icon {
+                margin-right: 10px;
             }
 
             h1 {
@@ -1994,6 +2023,7 @@
 
 
             </h2>   
+            <div class="resource-buttons">
             <a class="paper-button" href="https://arxiv.org/abs/2510.09212" target="_blank" rel="noopener noreferrer">
                 <span class="icon">
                     <i class="fas fa-file-pdf"></i>
@@ -2009,6 +2039,24 @@
                 </span>
                 <span>
                     Code
+                </span>
+            </a>
+            <a class="paper-button huggingface-button" href="https://huggingface.co/vita-video-gen/svi-model/tree/main/version-1.0" target="_blank" rel="noopener noreferrer">
+
+                <span class="icon">
+                    HF
+                </span>
+                <span>
+                    Hugging Face
+                </span>
+            </a>
+            <a class="paper-button modelscope-button" href="https://www.modelscope.cn/models/epfl-vita/svi-model" target="_blank" rel="noopener noreferrer">
+
+                <span class="icon">
+                    MS
+                </span>
+                <span>
+                    ModelScope
                 </span>
             </a>
             <a class="paper-button" href="https://www.bilibili.com/video/BV1Zd4UzpE6G/?pop_share=1" target="_blank" rel="noopener noreferrer">
@@ -2029,6 +2077,7 @@
                     YouTube
                 </span>
             </a>
+            </div>
             </div>
 
         </div>
